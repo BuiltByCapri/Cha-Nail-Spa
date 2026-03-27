@@ -637,13 +637,22 @@
     btn.textContent = 'Looking up…';
 
     try {
-      // no-cors: response is opaque — fire-and-forget; name pre-fill not possible
-      await fetch(`${SCRIPT_URL}?action=lookup&phone=${encodeURIComponent(raw)}`, { mode: 'no-cors' });
-    } catch (_) { /* network error — proceed anyway */ }
-
-    document.getElementById('first-name').value = '';
-    document.getElementById('last-name').value  = '';
-    document.getElementById('booking-title').textContent = 'Welcome';
+      const res  = await fetch(`${SCRIPT_URL}?action=lookup&phone=${encodeURIComponent(raw)}`);
+      const data = await res.json();
+      if (data.found) {
+        document.getElementById('first-name').value = data.first;
+        document.getElementById('last-name').value  = data.last;
+        document.getElementById('booking-title').textContent = 'Welcome back, ' + data.first;
+      } else {
+        document.getElementById('first-name').value = '';
+        document.getElementById('last-name').value  = '';
+        document.getElementById('booking-title').textContent = 'Welcome';
+      }
+    } catch (_) {
+      document.getElementById('first-name').value = '';
+      document.getElementById('last-name').value  = '';
+      document.getElementById('booking-title').textContent = 'Welcome';
+    }
 
     btn.disabled    = false;
     btn.textContent = 'Continue';
@@ -668,12 +677,10 @@
   async function fetchAvailability(technician, date) {
     if (!technician || !date) return;
     try {
-      // no-cors: response is opaque — fire-and-forget; booked-slot marking not possible
-      await fetch(
-        `${SCRIPT_URL}?action=availability&technician=${encodeURIComponent(technician)}&date=${encodeURIComponent(date)}`,
-        { mode: 'no-cors' }
-      );
-    } catch (_) { /* silently skip */ }
+      const res  = await fetch(`${SCRIPT_URL}?action=availability&technician=${encodeURIComponent(technician)}&date=${encodeURIComponent(date)}`);
+      const data = await res.json();
+      markBookedTimes(1, data.bookedTimes || []);
+    } catch (_) { /* silently skip if offline */ }
   }
 
   function markBookedTimes(idx, bookedTimes) {
@@ -946,7 +953,6 @@
     bookBtn.textContent = 'Booking…';
 
     try {
-      // One GET per appointment (no-cors: opaque response — assume success)
       for (const appt of appointments) {
         const params = new URLSearchParams({
           action:     'book',
@@ -958,10 +964,21 @@
           time:       appt.time,
           services:   appt.services.join(', '),
         });
-        await fetch(`${SCRIPT_URL}?${params}`, { mode: 'no-cors' });
+        const res  = await fetch(`${SCRIPT_URL}?${params}`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+
+        if (data.conflict) {
+          banner.textContent = data.message || 'That time slot is already taken. Please choose another.';
+          banner.classList.add('visible');
+          bookBtn.disabled    = false;
+          bookBtn.textContent = 'Book Now';
+          return;
+        }
+        if (data.error) throw new Error(data.error);
+        if (!data.success) throw new Error('Unexpected response from server.');
       }
 
-      // Opaque response — assume success if no error thrown
       let summary = `<strong>${firstName} ${lastName}</strong><br>${formatDate(date)}<br><br>`;
       appointments.forEach((a, i) => {
         if (appointments.length > 1) summary += `<strong>Appointment ${i + 1}</strong><br>`;
@@ -974,7 +991,9 @@
       hide('step-booking');
       show('step-confirm');
     } catch (err) {
-      banner.textContent = 'Something went wrong — please try again or call us at (713) 622-6245.';
+      banner.textContent = err.message.startsWith('HTTP') || err.message.startsWith('Unexpected')
+        ? err.message
+        : 'Something went wrong — please try again or call us at (713) 622-6245.';
       banner.classList.add('visible');
       bookBtn.disabled    = false;
       bookBtn.textContent = 'Book Now';

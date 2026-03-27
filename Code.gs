@@ -13,6 +13,9 @@ const SHEET_NAME = 'Sheet1';
 // ── Entry points ────────────────────────────────────────────────────────────
 
 function doGet(e) {
+  // Apps Script web apps automatically include Access-Control-Allow-Origin: *
+  // for GET requests when deployed as "Execute as: Me / Anyone can access".
+  // No manual header setting needed — ContentService handles it.
   const action = e.parameter.action;
   if (action === 'lookup')       return lookupPhone(e.parameter.phone);
   if (action === 'availability') return checkAvailability(e.parameter.technician, e.parameter.date);
