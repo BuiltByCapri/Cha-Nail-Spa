@@ -63,7 +63,7 @@ function lookupPhone(phone) {
     if (String(row[0]).replace(/\D/g, '') === clean) match = row; // keep last
   }
 
-  if (match) return json({ found: true, first: match[1], last: match[2] });
+  if (match) return json({ found: true, firstName: match[1], lastName: match[2] });
   return json({ found: false });
 }
 

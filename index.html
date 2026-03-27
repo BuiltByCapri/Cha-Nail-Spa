@@ -640,9 +640,9 @@
       const res  = await fetch(`${SCRIPT_URL}?action=lookup&phone=${encodeURIComponent(raw)}`);
       const data = await res.json();
       if (data.found) {
-        document.getElementById('first-name').value = data.first;
-        document.getElementById('last-name').value  = data.last;
-        document.getElementById('booking-title').textContent = 'Welcome back, ' + data.first;
+        document.getElementById('first-name').value = data.firstName;
+        document.getElementById('last-name').value  = data.lastName;
+        document.getElementById('booking-title').textContent = 'Welcome back, ' + data.firstName;
       } else {
         document.getElementById('first-name').value = '';
         document.getElementById('last-name').value  = '';
