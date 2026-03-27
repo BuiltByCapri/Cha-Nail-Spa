@@ -16,7 +16,23 @@ function doGet(e) {
   const action = e.parameter.action;
   if (action === 'lookup')       return lookupPhone(e.parameter.phone);
   if (action === 'availability') return checkAvailability(e.parameter.technician, e.parameter.date);
+  if (action === 'book')         return bookFromParams(e.parameter);
   return json({ error: 'Unknown action' });
+}
+
+// Handles booking submitted as GET params (browser no-cors workaround)
+function bookFromParams(p) {
+  return bookAppointment({
+    phone:      p.phone     || '',
+    firstName:  p.firstName || '',
+    lastName:   p.lastName  || '',
+    date:       p.date      || '',
+    appointments: [{
+      technician: p.technician || 'Any Tech',
+      time:       p.time       || '',
+      services:   (p.services  || '').split(', ').filter(Boolean),
+    }],
+  });
 }
 
 function doPost(e) {
