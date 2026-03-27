@@ -385,7 +385,7 @@
       opacity: 0.7;
     }
 
-    /* ─── CONFLICT / ERROR BANNER ─── */
+    /* ─── ERROR BANNER ─── */
     .error-banner {
       display: none;
       background: #fde8df;
@@ -396,25 +396,8 @@
       font-weight: 400;
       color: #7a3a25;
       margin-bottom: 1.2rem;
-      line-height: 1.6;
     }
     .error-banner.visible { display: block; }
-    .btn-inline {
-      display: inline-block;
-      margin-top: 0.5rem;
-      background: var(--accent);
-      color: #fff9f7;
-      border: none;
-      border-radius: 20px;
-      padding: 0.35rem 1rem;
-      font-family: 'Jost', sans-serif;
-      font-size: 0.78rem;
-      font-weight: 400;
-      cursor: pointer;
-      letter-spacing: 0.04em;
-      transition: opacity 0.15s;
-    }
-    .btn-inline:hover { opacity: 0.85; }
 
     /* ─── INLINE LOADING STATE ─── */
     .btn[disabled] { opacity: 0.55; cursor: not-allowed; transform: none; }
@@ -596,8 +579,8 @@
         </div>
       </div>
 
-      <!-- Conflict / error message -->
-      <div class="error-banner" id="conflict-banner"></div>
+      <!-- Generic error (network failure etc.) -->
+      <div class="error-banner" id="booking-error"></div>
 
       <!-- Buttons -->
       <div class="btn-row">
@@ -632,8 +615,9 @@
   // ── State ──
   let apptCount     = 1;
   let currentPhone  = '';
-  const techSelections = { 1: ['Any Tech'] };
-  const timeSelections = { 1: null };
+  const techSelections  = { 1: ['Any Tech'] };
+  const timeSelections  = { 1: null };
+  const unavailableSlots = { 1: new Set() };
 
   // ── Phone formatting ──
   document.getElementById('phone-input').addEventListener('input', function () {
@@ -696,29 +680,24 @@
     try {
       const res  = await fetch(`${SCRIPT_URL}?action=availability&technician=${encodeURIComponent(technician)}&date=${encodeURIComponent(date)}`);
       const data = await res.json();
-      markBookedTimes(1, data.bookedTimes || []);
+      unavailableSlots[1] = new Set(data.unavailableSlots || []);
+      rebuildTimeList(1);
     } catch (_) { /* silently skip if offline */ }
   }
 
-  function markBookedTimes(idx, bookedTimes) {
-    // Rebuild the time list first so it exists
-    buildTimeList(idx);
+  // Clear and re-render the time list, excluding unavailable slots entirely.
+  function rebuildTimeList(idx) {
     const listEl = document.getElementById('time-list-' + idx);
     if (!listEl) return;
-    listEl.querySelectorAll('.time-opt').forEach(opt => {
-      if (bookedTimes.includes(opt.dataset.value)) {
-        opt.classList.add('booked');
-        // If this slot was selected, deselect it
-        if (opt.classList.contains('selected-opt')) {
-          opt.classList.remove('selected-opt');
-          timeSelections[idx] = null;
-          const disp = document.getElementById('time-display-' + idx);
-          if (disp) { disp.textContent = 'Select a time…'; disp.classList.add('placeholder'); }
-        }
-      } else {
-        opt.classList.remove('booked');
-      }
-    });
+    // If the currently selected time became unavailable, clear it
+    if (timeSelections[idx] && unavailableSlots[idx].has(timeSelections[idx])) {
+      timeSelections[idx] = null;
+      const disp = document.getElementById('time-display-' + idx);
+      if (disp) { disp.textContent = 'Select a time…'; disp.classList.add('placeholder'); }
+    }
+    listEl.innerHTML = '';
+    delete listEl.dataset.built;
+    buildTimeList(idx);
   }
 
   function triggerAvailabilityCheck() {
@@ -810,25 +789,24 @@
     if (!listEl || listEl.dataset.built) return;
     listEl.dataset.built = '1';
 
-    const times = [];
+    const blocked = unavailableSlots[idx] || new Set();
+
     for (let h = 9; h <= 21; h++) {
       for (let m = 0; m < 60; m += 15) {
         if (h === 21 && m > 0) break;
-        const ampm  = h < 12 ? 'AM' : 'PM';
-        const hour  = h % 12 === 0 ? 12 : h % 12;
-        const min   = m === 0 ? '00' : m;
-        times.push(`${hour}:${min} ${ampm}`);
+        const ampm = h < 12 ? 'AM' : 'PM';
+        const hour = h % 12 === 0 ? 12 : h % 12;
+        const min  = m === 0 ? '00' : m;
+        const t    = `${hour}:${min} ${ampm}`;
+        if (blocked.has(t)) continue; // omit unavailable slots entirely
+        const opt = document.createElement('div');
+        opt.className = 'dropdown-option time-opt';
+        opt.textContent = t;
+        opt.dataset.value = t;
+        opt.addEventListener('click', function () { selectTime(this, idx); });
+        listEl.appendChild(opt);
       }
     }
-
-    times.forEach(t => {
-      const opt = document.createElement('div');
-      opt.className = 'dropdown-option time-opt';
-      opt.textContent = t;
-      opt.dataset.value = t;
-      opt.addEventListener('click', function () { selectTime(this, idx); });
-      listEl.appendChild(opt);
-    });
   }
 
   function selectTime(optEl, idx) {
@@ -931,7 +909,7 @@
   }
 
   function clearError() {
-    const b = document.getElementById('conflict-banner');
+    const b = document.getElementById('booking-error');
     if (b) { b.textContent = ''; b.classList.remove('visible'); }
   }
 
@@ -941,7 +919,7 @@
     const lastName  = document.getElementById('last-name').value.trim();
     const date      = document.getElementById('appt-date').value;
 
-    const banner = document.getElementById('conflict-banner');
+    const banner = document.getElementById('booking-error');
     banner.textContent = '';
     banner.classList.remove('visible');
 
@@ -984,22 +962,7 @@
         const res  = await fetch(`${SCRIPT_URL}?${params}`);
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
-
-        if (data.conflict) {
-          let html = data.error || 'That time is taken.';
-          if (data.nextAvailable) {
-            html += ' Next available: <strong>' + data.nextAvailable + '</strong>.';
-            html += '<br><button class="btn-inline" onclick="selectSuggestedTime(\'' + data.nextAvailable + '\')">'
-                  + 'Book ' + data.nextAvailable + ' instead</button>';
-          }
-          banner.innerHTML = html;
-          banner.classList.add('visible');
-          bookBtn.disabled    = false;
-          bookBtn.textContent = 'Book Now';
-          return;
-        }
-        if (data.error) throw new Error(data.error);
-        if (!data.success) throw new Error('Unexpected response from server.');
+        if (!data.success) throw new Error(data.error || 'Booking failed — please try another time.');
       }
 
       let summary = `<strong>${firstName} ${lastName}</strong><br>${formatDate(date)}<br><br>`;
@@ -1014,9 +977,7 @@
       hide('step-booking');
       show('step-confirm');
     } catch (err) {
-      banner.textContent = err.message.startsWith('HTTP') || err.message.startsWith('Unexpected')
-        ? err.message
-        : 'Something went wrong — please try again or call us at (713) 622-6245.';
+      banner.textContent = 'Something went wrong — please try again or call us at (713) 622-6245.';
       banner.classList.add('visible');
       bookBtn.disabled    = false;
       bookBtn.textContent = 'Book Now';
@@ -1030,19 +991,6 @@
   }
 
   // ── Helpers ──
-  // ── "Book [time] instead" ──
-  function selectSuggestedTime(time) {
-    buildTimeList(1); // ensure list is populated
-    const listEl = document.getElementById('time-list-1');
-    if (!listEl) return;
-    const opt = [...listEl.querySelectorAll('.time-opt')]
-      .find(o => o.dataset.value === time && !o.classList.contains('booked'));
-    if (opt) {
-      selectTime(opt, 1);
-      clearError();
-    }
-  }
-
   function show(id) { document.getElementById(id).style.display = 'block'; }
   function hide(id) { document.getElementById(id).style.display = 'none'; }
 
@@ -1057,8 +1005,10 @@
     apptCount = 1;
     Object.keys(techSelections).forEach(k => delete techSelections[k]);
     Object.keys(timeSelections).forEach(k => delete timeSelections[k]);
-    techSelections[1] = ['Any Tech'];
-    timeSelections[1] = null;
+    Object.keys(unavailableSlots).forEach(k => delete unavailableSlots[k]);
+    techSelections[1]  = ['Any Tech'];
+    timeSelections[1]  = null;
+    unavailableSlots[1] = new Set();
 
     document.getElementById('phone-input').value   = '';
     document.getElementById('first-name').value    = '';
@@ -1082,12 +1032,12 @@
     document.querySelector('#tech-list-1 [data-value="Any Tech"]').classList.add('selected-opt');
     document.getElementById('tech-display-1').textContent = 'Any Tech';
 
-    // Reset time display
+    // Reset time display and rebuild list clean
     document.getElementById('time-display-1').textContent = 'Select a time…';
     document.getElementById('time-display-1').classList.add('placeholder');
-    if (document.getElementById('time-list-1').dataset.built) {
-      document.querySelectorAll('#time-list-1 .time-opt').forEach(o => o.classList.remove('selected-opt'));
-    }
+    const tl = document.getElementById('time-list-1');
+    tl.innerHTML = '';
+    delete tl.dataset.built;
   }
 
   // ── Init ──

@@ -25,7 +25,7 @@ function doGet(e) {
 // ── Handlers ──────────────────────────────────────────────────────────────────
 
 // GET ?action=lookup&phone=7135551234
-// Returns { found, firstName, lastName } — uses most recent row for that phone
+// Returns { found, firstName, lastName } — most recent row for that phone
 function lookupPhone(phone) {
   const clean = String(phone || '').replace(/\D/g, '');
   if (!clean) return json({ found: false });
@@ -33,7 +33,7 @@ function lookupPhone(phone) {
   const rows  = getRows();
   let match   = null;
   for (const row of rows) {
-    if (String(row[0]).replace(/\D/g, '') === clean) match = row; // keep last match
+    if (String(row[0]).replace(/\D/g, '') === clean) match = row;
   }
 
   if (match) return json({ found: true, firstName: match[1], lastName: match[2] });
@@ -41,30 +41,19 @@ function lookupPhone(phone) {
 }
 
 // GET ?action=availability&technician=Bae&date=2026-04-01
-// Returns { bookedTimes: ['10:00 AM', ...] } for that tech+date combo.
+// Returns { unavailableSlots: [...] } — all slots blocked by existing bookings,
+// including duration + 15-min grace period for each booking.
 function checkAvailability(technician, date) {
-  if (!technician || !date) return json({ bookedTimes: [] });
+  if (!technician || !date) return json({ unavailableSlots: [] });
 
   const rows        = getRows();
-  const bookedTimes = [];
-  const isAny       = technician === 'Any Tech';
+  const unavailable = getUnavailableSlots(technician, date, rows);
 
-  for (const row of rows) {
-    const rowDate = String(row[3]);
-    const rowTime = String(row[4]);
-    const rowTech = String(row[5]);
-    if (rowDate !== date) continue;
-    if (isAny || rowTech === 'Any Tech' || rowTech === technician) {
-      if (rowTime) bookedTimes.push(rowTime);
-    }
-  }
-
-  return json({ bookedTimes });
+  return json({ unavailableSlots: [...unavailable] });
 }
 
 // GET ?action=book&phone=&firstName=&lastName=&date=&technician=&time=&services=
-// Conflict-checks first; if blocked returns nextAvailable slot.
-// Writes a single row if clean.
+// Checks for conflicts (using duration-aware blocking), then writes one row.
 function bookAppointment(params) {
   const phone      = params.phone      || '';
   const firstName  = params.firstName  || '';
@@ -74,58 +63,86 @@ function bookAppointment(params) {
   const time       = params.time       || '';
   const services   = params.services   || '';
 
-  const rows  = getRows();
-  const isAny = technician === 'Any Tech';
+  const rows        = getRows();
+  const unavailable = getUnavailableSlots(technician, date, rows);
 
-  // ── Conflict check ──
-  for (const row of rows) {
-    const rowDate = String(row[3]);
-    const rowTime = String(row[4]);
-    const rowTech = String(row[5]);
-    if (rowDate !== date || rowTime !== time) continue;
-
-    if (isAny || rowTech === 'Any Tech' || rowTech === technician) {
-      const nextAvailable = findNextAvailable(technician, date, time, rows);
-      return json({
-        success:       false,
-        conflict:      true,
-        nextAvailable: nextAvailable,
-        error:         technician + ' is already booked at ' + time + '.',
-      });
-    }
+  if (unavailable.has(time)) {
+    const next = findNextAvailable(technician, date, time, rows);
+    return json({
+      success:       false,
+      conflict:      true,
+      nextAvailable: next,
+      error:         technician + ' is not available at ' + time + '.',
+    });
   }
 
-  // ── Write row ──
   const sheet = getSheet();
   ensureHeader(sheet);
   sheet.appendRow([phone, firstName, lastName, date, time, technician, services, new Date().toISOString()]);
   return json({ success: true });
 }
 
-// ── Next-available helper ─────────────────────────────────────────────────────
+// ── Duration-aware slot blocking ──────────────────────────────────────────────
 
-function findNextAvailable(technician, date, requestedTime, rows) {
-  const isAny  = technician === 'Any Tech';
-  const booked = new Set();
+// Returns a Set of all time strings that are unavailable for technician+date,
+// accounting for service duration + 15-min grace period on each booking.
+function getUnavailableSlots(technician, date, rows) {
+  const isAny      = technician === 'Any Tech';
+  const unavailable = new Set();
 
   for (const row of rows) {
     if (String(row[3]) !== date) continue;
     const rowTech = String(row[5]);
-    if (isAny || rowTech === 'Any Tech' || rowTech === technician) {
-      booked.add(String(row[4]));
+    if (!isAny && rowTech !== 'Any Tech' && rowTech !== technician) continue;
+
+    const rowTime     = String(row[4]);
+    const rowServices = String(row[6]);
+    const blocked     = getBlockedSlots(rowTime, rowServices);
+    blocked.forEach(s => unavailable.add(s));
+  }
+
+  return unavailable;
+}
+
+// Returns all 15-min slots occupied by a booking:
+// from start time up to (but not including) start + duration + 15-min grace.
+function getBlockedSlots(startTime, servicesStr) {
+  const totalMin  = parseTotalDuration(servicesStr) + 15;
+  const startMin  = timeToMinutes(startTime);
+  const blocked   = [];
+
+  for (const slot of allTimeSlots()) {
+    const slotMin = timeToMinutes(slot);
+    if (slotMin >= startMin && slotMin < startMin + totalMin) {
+      blocked.push(slot);
     }
   }
 
-  const slots      = allTimeSlots();
-  const reqMinutes = timeToMinutes(requestedTime);
+  return blocked;
+}
 
-  for (const slot of slots) {
-    if (timeToMinutes(slot) <= reqMinutes) continue; // skip requested time and earlier
-    if (!booked.has(slot)) return slot;
+// Parses "Full Set 45min, Pedicure 45min" → 90
+function parseTotalDuration(servicesStr) {
+  const matches = String(servicesStr).match(/(\d+)min/g) || [];
+  const total   = matches.reduce((sum, m) => sum + parseInt(m, 10), 0);
+  return total > 0 ? total : 15;
+}
+
+// ── Next-available helper ─────────────────────────────────────────────────────
+
+function findNextAvailable(technician, date, requestedTime, rows) {
+  const unavailable = getUnavailableSlots(technician, date, rows);
+  const reqMin      = timeToMinutes(requestedTime);
+
+  for (const slot of allTimeSlots()) {
+    if (timeToMinutes(slot) <= reqMin) continue;
+    if (!unavailable.has(slot)) return slot;
   }
 
-  return null; // fully booked for the day
+  return null;
 }
+
+// ── Time helpers ──────────────────────────────────────────────────────────────
 
 function allTimeSlots() {
   const slots = [];
