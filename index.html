@@ -373,6 +373,35 @@
       font-size: 0.88rem;
     }
 
+    /* ─── BOOKED TIME SLOT ─── */
+    .dropdown-option.time-opt.booked {
+      color: #cbb8b0;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .dropdown-option.time-opt.booked::after {
+      content: ' · taken';
+      font-size: 0.75rem;
+      opacity: 0.7;
+    }
+
+    /* ─── CONFLICT / ERROR BANNER ─── */
+    .error-banner {
+      display: none;
+      background: #fde8df;
+      border: 0.5px solid #d4917a;
+      border-radius: 8px;
+      padding: 0.65rem 0.9rem;
+      font-size: 0.82rem;
+      font-weight: 400;
+      color: #7a3a25;
+      margin-bottom: 1.2rem;
+    }
+    .error-banner.visible { display: block; }
+
+    /* ─── INLINE LOADING STATE ─── */
+    .btn[disabled] { opacity: 0.55; cursor: not-allowed; transform: none; }
+
     /* ─── STEPS ─── */
     #step-phone   { display: block; }
     #step-booking { display: none; }
@@ -550,6 +579,9 @@
         </div>
       </div>
 
+      <!-- Conflict / error message -->
+      <div class="error-banner" id="conflict-banner"></div>
+
       <!-- Buttons -->
       <div class="btn-row">
         <button class="btn btn-ghost"   onclick="addAppointment()">+ Add another appointment</button>
@@ -577,18 +609,14 @@
 <footer>© 2026 Cha Nails &amp; Spa &nbsp;·&nbsp; Houston, TX</footer>
 
 <script>
-  // ── Mock customer data ──
-  const CUSTOMERS = [
-    { phone: '7135550101', first: 'Lisa',   last: 'Nguyen' },
-    { phone: '7135550202', first: 'Maria',  last: 'Chen'   },
-    { phone: '7135550303', first: 'Ashley', last: 'Tran'   },
-    { phone: '7135550404', first: 'Emily',  last: 'Pham'   },
-  ];
+  // ── Config ──
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx1_Q8NGKEgiktcnmrHdyNlvIV24XzxFmEGWr_nAXkwOAgtr6bU0_aDZVIa-T8EzlI7/exec';
 
   // ── State ──
-  let apptCount = 1;
-  const techSelections  = { 1: ['Any Tech'] };
-  const timeSelections  = { 1: null };
+  let apptCount     = 1;
+  let currentPhone  = '';
+  const techSelections = { 1: ['Any Tech'] };
+  const timeSelections = { 1: null };
 
   // ── Phone formatting ──
   document.getElementById('phone-input').addEventListener('input', function () {
@@ -600,18 +628,37 @@
   });
 
   // ── Step 1: phone gate ──
-  function handlePhoneContinue() {
+  async function handlePhoneContinue() {
     const raw = document.getElementById('phone-input').value.replace(/\D/g, '');
-    const match = CUSTOMERS.find(c => c.phone === raw);
-    if (match) {
-      document.getElementById('first-name').value = match.first;
-      document.getElementById('last-name').value  = match.last;
-      document.getElementById('booking-title').textContent = 'Welcome back, ' + match.first;
-    } else {
+    currentPhone = raw;
+
+    const btn = document.querySelector('#step-phone .btn-continue');
+    btn.disabled = true;
+    btn.textContent = 'Looking up…';
+
+    try {
+      const res  = await fetch(`${SCRIPT_URL}?action=lookup&phone=${raw}`);
+      const data = await res.json();
+
+      if (data.found) {
+        document.getElementById('first-name').value = data.first;
+        document.getElementById('last-name').value  = data.last;
+        document.getElementById('booking-title').textContent = 'Welcome back, ' + data.first;
+      } else {
+        document.getElementById('first-name').value = '';
+        document.getElementById('last-name').value  = '';
+        document.getElementById('booking-title').textContent = 'Welcome';
+      }
+    } catch (_) {
+      // Network error — still proceed, just blank fields
       document.getElementById('first-name').value = '';
       document.getElementById('last-name').value  = '';
       document.getElementById('booking-title').textContent = 'Welcome';
     }
+
+    btn.disabled    = false;
+    btn.textContent = 'Continue';
+
     // Set min date to tomorrow
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -628,6 +675,47 @@
     const hasOther = !!document.querySelector('#pills-' + idx + ' .pill[data-service="Other"].selected');
     if (wrap) wrap.classList.toggle('visible', hasOther);
   }
+
+  // ── Availability checking ──
+  async function fetchAvailability(technician, date) {
+    if (!technician || !date) return;
+    try {
+      const res  = await fetch(`${SCRIPT_URL}?action=availability&technician=${encodeURIComponent(technician)}&date=${encodeURIComponent(date)}`);
+      const data = await res.json();
+      markBookedTimes(1, data.bookedTimes || []);
+    } catch (_) { /* silently skip if offline */ }
+  }
+
+  function markBookedTimes(idx, bookedTimes) {
+    // Rebuild the time list first so it exists
+    buildTimeList(idx);
+    const listEl = document.getElementById('time-list-' + idx);
+    if (!listEl) return;
+    listEl.querySelectorAll('.time-opt').forEach(opt => {
+      if (bookedTimes.includes(opt.dataset.value)) {
+        opt.classList.add('booked');
+        // If this slot was selected, deselect it
+        if (opt.classList.contains('selected-opt')) {
+          opt.classList.remove('selected-opt');
+          timeSelections[idx] = null;
+          const disp = document.getElementById('time-display-' + idx);
+          if (disp) { disp.textContent = 'Select a time…'; disp.classList.add('placeholder'); }
+        }
+      } else {
+        opt.classList.remove('booked');
+      }
+    });
+  }
+
+  function triggerAvailabilityCheck() {
+    const date  = document.getElementById('appt-date').value;
+    const techs = techSelections[1] || ['Any Tech'];
+    // Only check when a single specific tech or Any Tech is chosen alongside a date
+    if (date && techs.length === 1) fetchAvailability(techs[0], date);
+  }
+
+  // Wire date change
+  document.getElementById('appt-date').addEventListener('change', triggerAvailabilityCheck);
 
   // ── Dropdown open/close ──
   function toggleDropdown(id) {
@@ -698,6 +786,8 @@
     const display = document.getElementById('tech-display-' + idx);
     display.textContent = sel.join(', ');
     display.classList.toggle('placeholder', false);
+
+    if (idx === 1) triggerAvailabilityCheck();
   }
 
   // ── Time single-select ──
@@ -820,16 +910,27 @@
 
   // ── Cancel ──
   function cancelBooking() {
+    clearError();
     show('step-phone');
     hide('step-booking');
     resetForm();
   }
 
+  function clearError() {
+    const b = document.getElementById('conflict-banner');
+    if (b) { b.textContent = ''; b.classList.remove('visible'); }
+  }
+
   // ── Submit ──
-  function submitBooking() {
+  async function submitBooking() {
     const firstName = document.getElementById('first-name').value.trim();
     const lastName  = document.getElementById('last-name').value.trim();
     const date      = document.getElementById('appt-date').value;
+
+    // Hide any previous error
+    const banner = document.getElementById('conflict-banner');
+    banner.textContent = '';
+    banner.classList.remove('visible');
 
     const appointments = [];
     for (let i = 1; i <= apptCount; i++) {
@@ -843,32 +944,66 @@
         }
         return `${svc} ${p.dataset.dur}`;
       });
+      const techs = techSelections[i] || ['Any Tech'];
       appointments.push({
         services,
-        technicians: techSelections[i] || ['Any Tech'],
-        time: timeSelections[i] || 'Not specified',
+        technician: techs.join(', '),
+        time: timeSelections[i] || '',
       });
     }
 
-    const booking = { firstName, lastName, date, appointments };
-    console.log('Booking:', booking);
+    const payload = {
+      action: 'book',
+      phone: currentPhone,
+      firstName,
+      lastName,
+      date,
+      appointments,
+    };
 
-    // Build confirmation summary
-    let summary = `
-      <strong>${firstName} ${lastName}</strong><br>
-      ${formatDate(date)}<br><br>
-    `;
-    appointments.forEach((a, i) => {
-      if (appointments.length > 1) summary += `<strong>Appointment ${i + 1}</strong><br>`;
-      summary += `${a.services.length ? a.services.join(', ') : '—'}<br>`;
-      summary += `With: ${a.technicians.join(', ')}<br>`;
-      summary += `Time: ${a.time}`;
-      if (i < appointments.length - 1) summary += '<br><br>';
-    });
+    const bookBtn = document.querySelector('.btn-primary');
+    bookBtn.disabled    = true;
+    bookBtn.textContent = 'Booking…';
 
-    document.getElementById('confirm-summary').innerHTML = summary;
-    hide('step-booking');
-    show('step-confirm');
+    try {
+      const res  = await fetch(SCRIPT_URL, {
+        method:  'POST',
+        body:    JSON.stringify(payload),
+      });
+      const data = await res.json();
+
+      if (data.conflict) {
+        banner.textContent = data.message || 'That time slot is already taken. Please choose another.';
+        banner.classList.add('visible');
+        bookBtn.disabled    = false;
+        bookBtn.textContent = 'Book Now';
+        return;
+      }
+
+      if (data.success) {
+        // Build confirmation summary
+        let summary = `<strong>${firstName} ${lastName}</strong><br>${formatDate(date)}<br><br>`;
+        appointments.forEach((a, i) => {
+          if (appointments.length > 1) summary += `<strong>Appointment ${i + 1}</strong><br>`;
+          summary += `${a.services.length ? a.services.join(', ') : '—'}<br>`;
+          summary += `With: ${a.technician}<br>`;
+          summary += `Time: ${a.time || 'Not specified'}`;
+          if (i < appointments.length - 1) summary += '<br><br>';
+        });
+        document.getElementById('confirm-summary').innerHTML = summary;
+        hide('step-booking');
+        show('step-confirm');
+        return;
+      }
+
+      throw new Error(data.error || 'Unexpected response');
+    } catch (err) {
+      banner.textContent = 'Something went wrong — please try again or call us at (713) 622-6245.';
+      banner.classList.add('visible');
+    }
+
+    bookBtn.disabled    = false;
+    bookBtn.textContent = 'Book Now';
   }
 
   function bookAnother() {
