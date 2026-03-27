@@ -396,8 +396,25 @@
       font-weight: 400;
       color: #7a3a25;
       margin-bottom: 1.2rem;
+      line-height: 1.6;
     }
     .error-banner.visible { display: block; }
+    .btn-inline {
+      display: inline-block;
+      margin-top: 0.5rem;
+      background: var(--accent);
+      color: #fff9f7;
+      border: none;
+      border-radius: 20px;
+      padding: 0.35rem 1rem;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 400;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: opacity 0.15s;
+    }
+    .btn-inline:hover { opacity: 0.85; }
 
     /* ─── INLINE LOADING STATE ─── */
     .btn[disabled] { opacity: 0.55; cursor: not-allowed; transform: none; }
@@ -969,7 +986,13 @@
         const data = await res.json();
 
         if (data.conflict) {
-          banner.textContent = data.message || 'That time slot is already taken. Please choose another.';
+          let html = data.error || 'That time is taken.';
+          if (data.nextAvailable) {
+            html += ' Next available: <strong>' + data.nextAvailable + '</strong>.';
+            html += '<br><button class="btn-inline" onclick="selectSuggestedTime(\'' + data.nextAvailable + '\')">'
+                  + 'Book ' + data.nextAvailable + ' instead</button>';
+          }
+          banner.innerHTML = html;
           banner.classList.add('visible');
           bookBtn.disabled    = false;
           bookBtn.textContent = 'Book Now';
@@ -1007,6 +1030,19 @@
   }
 
   // ── Helpers ──
+  // ── "Book [time] instead" ──
+  function selectSuggestedTime(time) {
+    buildTimeList(1); // ensure list is populated
+    const listEl = document.getElementById('time-list-1');
+    if (!listEl) return;
+    const opt = [...listEl.querySelectorAll('.time-opt')]
+      .find(o => o.dataset.value === time && !o.classList.contains('booked'));
+    if (opt) {
+      selectTime(opt, 1);
+      clearError();
+    }
+  }
+
   function show(id) { document.getElementById(id).style.display = 'block'; }
   function hide(id) { document.getElementById(id).style.display = 'none'; }
 
