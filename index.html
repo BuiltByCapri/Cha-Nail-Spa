@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cha Nails &amp; Spa | Book Your Appointment</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --pink:    #e8a0b4;
+      --blush:   #f7d6e0;
+      --cream:   #fdf6f0;
+      --charcoal:#3a3335;
+      --muted:   #7d6b70;
+      --white:   #ffffff;
+    }
+
+    body {
+      font-family: 'Georgia', serif;
+      background: var(--cream);
+      color: var(--charcoal);
+    }
+
+    /* ── NAV ── */
+    header {
+      background: var(--white);
+      border-bottom: 1px solid var(--blush);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    nav {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-size: 1.4rem;
+      font-style: italic;
+      color: var(--charcoal);
+      letter-spacing: 0.04em;
+    }
+    .logo span { color: var(--pink); }
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 2rem;
+    }
+    nav a {
+      text-decoration: none;
+      color: var(--muted);
+      font-family: 'Arial', sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    nav a:hover { color: var(--pink); }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, var(--blush) 0%, var(--cream) 60%);
+      text-align: center;
+      padding: 5rem 1.5rem 4rem;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-style: italic;
+      color: var(--charcoal);
+      margin-bottom: 1rem;
+    }
+    .hero h1 span { color: var(--pink); }
+    .hero p {
+      font-family: 'Arial', sans-serif;
+      color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 520px;
+      margin: 0 auto 2rem;
+      line-height: 1.7;
+    }
+    .btn {
+      display: inline-block;
+      background: var(--pink);
+      color: var(--white);
+      padding: 0.85rem 2.2rem;
+      border-radius: 2rem;
+      text-decoration: none;
+      font-family: 'Arial', sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn:hover { background: #d4849a; transform: translateY(-1px); }
+
+    /* ── SERVICES ── */
+    .section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 4rem 1.5rem;
+    }
+    .section-title {
+      text-align: center;
+      font-size: 1.8rem;
+      font-style: italic;
+      margin-bottom: 0.4rem;
+    }
+    .section-sub {
+      text-align: center;
+      font-family: 'Arial', sans-serif;
+      color: var(--muted);
+      font-size: 0.9rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 3rem;
+    }
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+    }
+    .card {
+      background: var(--white);
+      border: 1px solid var(--blush);
+      border-radius: 1rem;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      transition: box-shadow 0.2s;
+    }
+    .card:hover { box-shadow: 0 6px 24px rgba(232,160,180,0.2); }
+    .card-icon { font-size: 2rem; margin-bottom: 0.8rem; }
+    .card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      color: var(--charcoal);
+    }
+    .card p {
+      font-family: 'Arial', sans-serif;
+      font-size: 0.875rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 0.8rem;
+    }
+    .card .price {
+      font-family: 'Arial', sans-serif;
+      font-size: 0.95rem;
+      font-weight: bold;
+      color: var(--pink);
+    }
+
+    /* ── BOOKING ── */
+    #booking { background: var(--blush); }
+    #booking .section { padding: 4rem 1.5rem; }
+    .booking-wrap {
+      background: var(--white);
+      border-radius: 1.5rem;
+      padding: 2.5rem 2rem;
+      max-width: 680px;
+      margin: 0 auto;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .form-group.full { grid-column: 1 / -1; }
+    label {
+      font-family: 'Arial', sans-serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    input, select, textarea {
+      border: 1px solid #e0d0d5;
+      border-radius: 0.5rem;
+      padding: 0.7rem 0.9rem;
+      font-family: 'Arial', sans-serif;
+      font-size: 0.95rem;
+      color: var(--charcoal);
+      background: var(--cream);
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--pink); }
+    textarea { resize: vertical; min-height: 90px; }
+    .form-submit { text-align: center; margin-top: 1.5rem; }
+
+    /* ── GALLERY STRIP ── */
+    .gallery {
+      display: flex;
+      gap: 0;
+      overflow: hidden;
+      height: 180px;
+    }
+    .gallery-swatch {
+      flex: 1;
+      transition: flex 0.4s ease;
+    }
+    .gallery-swatch:hover { flex: 2; }
+    .s1 { background: linear-gradient(160deg, #f4a7b9, #e88fa8); }
+    .s2 { background: linear-gradient(160deg, #c8a2c8, #b589b5); }
+    .s3 { background: linear-gradient(160deg, #f7c5a0, #f0a87e); }
+    .s4 { background: linear-gradient(160deg, #a8d8b9, #88c9a0); }
+    .s5 { background: linear-gradient(160deg, #aecbea, #8db8e0); }
+    .s6 { background: linear-gradient(160deg, #f9e0a0, #f5cc70); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--charcoal);
+      color: #c9b8bc;
+      text-align: center;
+      padding: 2.5rem 1.5rem;
+      font-family: 'Arial', sans-serif;
+      font-size: 0.875rem;
+      line-height: 2;
+    }
+    footer strong { color: var(--blush); }
+    footer a { color: var(--pink); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 600px) {
+      nav ul { display: none; }
+      .form-grid { grid-template-columns: 1fr; }
+      .gallery { height: 120px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <header>
+    <nav>
+      <div class="logo">Cha <span>Nails</span> &amp; Spa</div>
+      <ul>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#booking">Book Now</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1>Treat Yourself to <span>Beautiful Nails</span></h1>
+    <p>Premium nail care and spa services in a relaxing, luxurious setting. Your self-care journey starts here.</p>
+    <a href="#booking" class="btn">Book an Appointment</a>
+  </section>
+
+  <!-- COLOR GALLERY -->
+  <div class="gallery" aria-hidden="true">
+    <div class="gallery-swatch s1"></div>
+    <div class="gallery-swatch s2"></div>
+    <div class="gallery-swatch s3"></div>
+    <div class="gallery-swatch s4"></div>
+    <div class="gallery-swatch s5"></div>
+    <div class="gallery-swatch s6"></div>
+  </div>
+
+  <!-- SERVICES -->
+  <section id="services">
+    <div class="section">
+      <p class="section-sub">What We Offer</p>
+      <h2 class="section-title">Our Services</h2>
+      <div class="services-grid">
+        <div class="card">
+          <div class="card-icon">💅</div>
+          <h3>Classic Manicure</h3>
+          <p>Shape, buff, and polish with a relaxing hand massage included.</p>
+          <div class="price">From $25</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">✨</div>
+          <h3>Gel Manicure</h3>
+          <p>Long-lasting gel color that stays chip-free for up to 3 weeks.</p>
+          <div class="price">From $40</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🦶</div>
+          <h3>Spa Pedicure</h3>
+          <p>Full foot soak, scrub, massage, and polish for total relaxation.</p>
+          <div class="price">From $45</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">💎</div>
+          <h3>Acrylic Full Set</h3>
+          <p>Flawless acrylic extensions in any shape and length you desire.</p>
+          <div class="price">From $55</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🌸</div>
+          <h3>Nail Art</h3>
+          <p>Custom designs, florals, gems, and more — your nails, your art.</p>
+          <div class="price">From $15 add-on</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🧖</div>
+          <h3>Mani &amp; Pedi Combo</h3>
+          <p>Our most popular package — hands and feet treated together.</p>
+          <div class="price">From $65</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BOOKING -->
+  <section id="booking">
+    <div class="section">
+      <p class="section-sub">Reserve Your Spot</p>
+      <h2 class="section-title">Book an Appointment</h2>
+      <div class="booking-wrap">
+        <form id="booking-form" onsubmit="handleSubmit(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="first-name">First Name</label>
+              <input type="text" id="first-name" name="first_name" placeholder="Jane" required />
+            </div>
+            <div class="form-group">
+              <label for="last-name">Last Name</label>
+              <input type="text" id="last-name" name="last_name" placeholder="Doe" required />
+            </div>
+            <div class="form-group">
+              <label for="phone">Phone</label>
+              <input type="tel" id="phone" name="phone" placeholder="(555) 000-0000" required />
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" placeholder="jane@example.com" />
+            </div>
+            <div class="form-group">
+              <label for="service">Service</label>
+              <select id="service" name="service" required>
+                <option value="" disabled selected>Select a service…</option>
+                <option>Classic Manicure – $25</option>
+                <option>Gel Manicure – $40</option>
+                <option>Spa Pedicure – $45</option>
+                <option>Acrylic Full Set – $55</option>
+                <option>Nail Art Add-on – $15+</option>
+                <option>Mani &amp; Pedi Combo – $65</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="technician">Preferred Technician</label>
+              <select id="technician" name="technician">
+                <option value="" selected>No preference</option>
+                <option>Cha</option>
+                <option>Lily</option>
+                <option>Mai</option>
+                <option>Nina</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="date">Preferred Date</label>
+              <input type="date" id="date" name="date" required />
+            </div>
+            <div class="form-group">
+              <label for="time">Preferred Time</label>
+              <select id="time" name="time" required>
+                <option value="" disabled selected>Select a time…</option>
+                <option>9:00 AM</option>
+                <option>10:00 AM</option>
+                <option>11:00 AM</option>
+                <option>12:00 PM</option>
+                <option>1:00 PM</option>
+                <option>2:00 PM</option>
+                <option>3:00 PM</option>
+                <option>4:00 PM</option>
+                <option>5:00 PM</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label for="notes">Special Requests / Notes</label>
+              <textarea id="notes" name="notes" placeholder="Allergies, nail art ideas, etc."></textarea>
+            </div>
+          </div>
+          <div class="form-submit">
+            <button type="submit" class="btn">Request Appointment</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="section" style="text-align:center; padding-top: 3rem; padding-bottom: 3rem;">
+      <p class="section-sub">Find Us</p>
+      <h2 class="section-title">Visit the Spa</h2>
+      <p style="font-family:Arial,sans-serif; color:var(--muted); margin-top:1rem; line-height:2;">
+        123 Blossom Lane, Suite 4 &nbsp;|&nbsp; Your City, ST 00000<br>
+        <a href="tel:+15550001234" style="color:var(--pink); text-decoration:none;">(555) 000-1234</a> &nbsp;|&nbsp;
+        <a href="mailto:hello@chanailspa.com" style="color:var(--pink); text-decoration:none;">hello@chanailspa.com</a><br>
+        Mon – Sat: 9 AM – 7 PM &nbsp;|&nbsp; Sun: 10 AM – 5 PM
+      </p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <strong>Cha Nails &amp; Spa</strong><br>
+    123 Blossom Lane &nbsp;|&nbsp; <a href="tel:+15550001234">(555) 000-1234</a> &nbsp;|&nbsp;
+    <a href="mailto:hello@chanailspa.com">hello@chanailspa.com</a><br>
+    &copy; 2026 Cha Nails &amp; Spa. All rights reserved.
+  </footer>
+
+  <script>
+    // Set min date to today
+    document.getElementById('date').min = new Date().toISOString().split('T')[0];
+
+    function handleSubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      const data = Object.fromEntries(new FormData(form));
+      const btn = form.querySelector('button[type="submit"]');
+      btn.textContent = 'Request Sent!';
+      btn.style.background = '#a8d8b9';
+      btn.disabled = true;
+      console.log('Booking request:', data);
+      // TODO: wire up to backend / booking API
+    }
+  </script>
+
+</body>
+</html>
