@@ -412,6 +412,9 @@
       border-top: 0.5px solid var(--border);
     }
 
+    /* nested dropdown loses its own bottom margin — form-group provides it */
+    .form-group .custom-dropdown { margin-bottom: 0; }
+
     @media (max-width: 520px) {
       .card { padding: 1.8rem 1.2rem; }
       .grid-2 { grid-template-columns: 1fr; }
@@ -424,13 +427,13 @@
 
 <!-- ─── HEADER ─── -->
 <header>
-  <img src="logo.png" alt="Cha Nails &amp; Spa" class="header-logo" />
+  <img src="logo.jpg" alt="Cha Nails &amp; Spa" class="header-logo" onerror="this.style.display='none'" />
   <div class="header-brand-name">Cha</div>
   <div class="header-subtitle">Nails &amp; Spa</div>
   <div class="header-sep">✦ &nbsp; ✦ &nbsp; ✦</div>
   <div class="header-info">
-    9896 Bellaire Blvd, Suite 134 &nbsp;✦&nbsp; Houston, TX 77036<br>
-    <a href="tel:+17135550100">(713) 555-0100</a>
+    4210 San Felipe &nbsp;✦&nbsp; Houston, TX 77027<br>
+    <a href="tel:+17136226245">(713) 622-6245</a>
   </div>
 </header>
 
@@ -440,7 +443,7 @@
   <!-- STEP 1: PHONE GATE -->
   <div class="card" id="step-phone">
     <div>
-      <div class="card-title">Welcome back</div>
+      <div class="card-title">Welcome</div>
       <div class="card-sub">Enter your phone number to get started</div>
       <div class="form-group">
         <label for="phone-input">Phone Number</label>
@@ -452,7 +455,7 @@
 
   <!-- STEP 2: BOOKING FORM -->
   <div class="card" id="step-booking">
-    <div class="card-title">Book your visit</div>
+    <div class="card-title" id="booking-title">Book your visit</div>
     <div class="card-sub">Cha Nails &amp; Spa · Houston</div>
 
     <div class="notice">
@@ -501,43 +504,43 @@
         </div>
 
         <!-- Technician multi-select -->
-        <div class="form-group" style="margin-bottom:0">
+        <div class="form-group">
           <label>Technician</label>
-        </div>
-        <div class="custom-dropdown" id="tech-dropdown-1">
-          <div class="dropdown-trigger" onclick="toggleDropdown('tech-dropdown-1')">
-            <span class="placeholder" id="tech-display-1">Any Tech</span>
-            <span class="dropdown-caret">▼</span>
-          </div>
-          <div class="dropdown-list" id="tech-list-1">
-            <div class="dropdown-option selected-opt" data-value="Any Tech" onclick="toggleTech(this,'tech-dropdown-1')">
-              <span class="opt-check"></span> Any Tech
+          <div class="custom-dropdown" id="tech-dropdown-1">
+            <div class="dropdown-trigger" onclick="toggleDropdown('tech-dropdown-1')">
+              <span class="placeholder" id="tech-display-1">Any Tech</span>
+              <span class="dropdown-caret">▼</span>
             </div>
-            <div class="dropdown-option" data-value="Bae" onclick="toggleTech(this,'tech-dropdown-1')">
-              <span class="opt-check"></span> Bae
-            </div>
-            <div class="dropdown-option" data-value="Hannah" onclick="toggleTech(this,'tech-dropdown-1')">
-              <span class="opt-check"></span> Hannah
-            </div>
-            <div class="dropdown-option" data-value="Jessica" onclick="toggleTech(this,'tech-dropdown-1')">
-              <span class="opt-check"></span> Jessica
-            </div>
-            <div class="dropdown-option" data-value="Kim" onclick="toggleTech(this,'tech-dropdown-1')">
-              <span class="opt-check"></span> Kim
+            <div class="dropdown-list" id="tech-list-1">
+              <div class="dropdown-option selected-opt" data-value="Any Tech" onclick="toggleTech(this,'tech-dropdown-1')">
+                <span class="opt-check"></span> Any Tech
+              </div>
+              <div class="dropdown-option" data-value="Bae" onclick="toggleTech(this,'tech-dropdown-1')">
+                <span class="opt-check"></span> Bae
+              </div>
+              <div class="dropdown-option" data-value="Hannah" onclick="toggleTech(this,'tech-dropdown-1')">
+                <span class="opt-check"></span> Hannah
+              </div>
+              <div class="dropdown-option" data-value="Jessica" onclick="toggleTech(this,'tech-dropdown-1')">
+                <span class="opt-check"></span> Jessica
+              </div>
+              <div class="dropdown-option" data-value="Kim" onclick="toggleTech(this,'tech-dropdown-1')">
+                <span class="opt-check"></span> Kim
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Time single-select -->
-        <div class="form-group" style="margin-bottom:0">
+        <div class="form-group">
           <label>Preferred Time</label>
-        </div>
-        <div class="custom-dropdown" id="time-dropdown-1">
-          <div class="dropdown-trigger" onclick="toggleDropdown('time-dropdown-1')">
-            <span class="placeholder" id="time-display-1">Select a time…</span>
-            <span class="dropdown-caret">▼</span>
+          <div class="custom-dropdown" id="time-dropdown-1">
+            <div class="dropdown-trigger" onclick="toggleDropdown('time-dropdown-1')">
+              <span class="placeholder" id="time-display-1">Select a time…</span>
+              <span class="dropdown-caret">▼</span>
+            </div>
+            <div class="dropdown-list" id="time-list-1"></div>
           </div>
-          <div class="dropdown-list" id="time-list-1"></div>
         </div>
       </div>
     </div>
@@ -595,9 +598,11 @@
     if (match) {
       document.getElementById('first-name').value = match.first;
       document.getElementById('last-name').value  = match.last;
+      document.getElementById('booking-title').textContent = 'Welcome back, ' + match.first;
     } else {
       document.getElementById('first-name').value = '';
       document.getElementById('last-name').value  = '';
+      document.getElementById('booking-title').textContent = 'Welcome';
     }
     // Set min date to tomorrow
     const tomorrow = new Date();
@@ -758,33 +763,37 @@
         <span class="pill" data-service="Other"         data-dur="15min" onclick="togglePill(this,${idx})">Other <span class="pill-duration">15min</span></span>
       </div>
       <div class="other-input-wrap" id="other-wrap-${idx}">
-        <div class="form-group" style="margin-bottom:0">
+        <div class="form-group">
           <input type="text" id="other-text-${idx}" placeholder="Describe your service request…" />
         </div>
       </div>
 
-      <div class="form-group" style="margin-bottom:0"><label>Technician</label></div>
-      <div class="custom-dropdown" id="tech-dropdown-${idx}">
-        <div class="dropdown-trigger" onclick="toggleDropdown('tech-dropdown-${idx}')">
-          <span id="tech-display-${idx}">Any Tech</span>
-          <span class="dropdown-caret">▼</span>
-        </div>
-        <div class="dropdown-list" id="tech-list-${idx}">
-          <div class="dropdown-option selected-opt" data-value="Any Tech"  onclick="toggleTech(this,'tech-dropdown-${idx}')"><span class="opt-check"></span> Any Tech</div>
-          <div class="dropdown-option"              data-value="Bae"       onclick="toggleTech(this,'tech-dropdown-${idx}')"><span class="opt-check"></span> Bae</div>
-          <div class="dropdown-option"              data-value="Hannah"    onclick="toggleTech(this,'tech-dropdown-${idx}')"><span class="opt-check"></span> Hannah</div>
-          <div class="dropdown-option"              data-value="Jessica"   onclick="toggleTech(this,'tech-dropdown-${idx}')"><span class="opt-check"></span> Jessica</div>
-          <div class="dropdown-option"              data-value="Kim"       onclick="toggleTech(this,'tech-dropdown-${idx}')"><span class="opt-check"></span> Kim</div>
+      <div class="form-group">
+        <label>Technician</label>
+        <div class="custom-dropdown" id="tech-dropdown-${idx}">
+          <div class="dropdown-trigger" onclick="toggleDropdown('tech-dropdown-${idx}')">
+            <span id="tech-display-${idx}">Any Tech</span>
+            <span class="dropdown-caret">▼</span>
+          </div>
+          <div class="dropdown-list" id="tech-list-${idx}">
+            <div class="dropdown-option selected-opt" data-value="Any Tech"  onclick="toggleTech(this,'tech-dropdown-${idx}')"><span class="opt-check"></span> Any Tech</div>
+            <div class="dropdown-option"              data-value="Bae"       onclick="toggleTech(this,'tech-dropdown-${idx}')"><span class="opt-check"></span> Bae</div>
+            <div class="dropdown-option"              data-value="Hannah"    onclick="toggleTech(this,'tech-dropdown-${idx}')"><span class="opt-check"></span> Hannah</div>
+            <div class="dropdown-option"              data-value="Jessica"   onclick="toggleTech(this,'tech-dropdown-${idx}')"><span class="opt-check"></span> Jessica</div>
+            <div class="dropdown-option"              data-value="Kim"       onclick="toggleTech(this,'tech-dropdown-${idx}')"><span class="opt-check"></span> Kim</div>
+          </div>
         </div>
       </div>
 
-      <div class="form-group" style="margin-bottom:0"><label>Preferred Time</label></div>
-      <div class="custom-dropdown" id="time-dropdown-${idx}">
-        <div class="dropdown-trigger" onclick="toggleDropdown('time-dropdown-${idx}'); buildTimeList(${idx})">
-          <span class="placeholder" id="time-display-${idx}">Select a time…</span>
-          <span class="dropdown-caret">▼</span>
+      <div class="form-group">
+        <label>Preferred Time</label>
+        <div class="custom-dropdown" id="time-dropdown-${idx}">
+          <div class="dropdown-trigger" onclick="toggleDropdown('time-dropdown-${idx}'); buildTimeList(${idx})">
+            <span class="placeholder" id="time-display-${idx}">Select a time…</span>
+            <span class="dropdown-caret">▼</span>
+          </div>
+          <div class="dropdown-list" id="time-list-${idx}"></div>
         </div>
-        <div class="dropdown-list" id="time-list-${idx}"></div>
       </div>
     `;
     document.getElementById('appt-blocks-container').appendChild(block);
