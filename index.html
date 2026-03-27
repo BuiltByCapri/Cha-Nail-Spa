@@ -84,20 +84,20 @@
     /* ─── MAIN ─── */
     main {
       flex: 1;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
       padding: 2.5rem 1.5rem 3rem;
     }
 
     /* ─── CARD ─── */
     .card {
+      display: block;
       background: var(--card-bg);
       border: 0.5px solid var(--border);
       border-radius: 16px;
       width: 100%;
-      max-width: 620px;
-      padding: 2.4rem 2.2rem;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2rem 2rem;
+      box-sizing: border-box;
     }
     .card-title {
       font-family: 'Cormorant Garamond', serif;
@@ -164,11 +164,14 @@
       font-size: 0.78rem;
       font-weight: 300;
       color: var(--accent-lt);
-      margin-bottom: 1.4rem;
+      margin: 0.8rem auto 0;
       padding: 0.6rem 0.9rem;
       background: #fde8df;
       border-radius: 8px;
       border: 0.5px solid var(--border);
+      max-width: 600px;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     /* ─── SERVICE PILLS ─── */
@@ -370,10 +373,19 @@
       font-size: 0.88rem;
     }
 
-    /* ─── PHONE GATE ─── */
-    #step-phone { display: flex; }
+    /* ─── STEPS ─── */
+    #step-phone   { display: block; }
     #step-booking { display: none; }
     #step-confirm { display: none; }
+
+    .booking-meta {
+      max-width: 600px;
+      width: 100%;
+      margin: 0 auto 0.2rem;
+      padding: 0 0.2rem;
+    }
+    .booking-meta .card-title { margin-bottom: 0.2rem; }
+    .booking-meta .card-sub   { margin-bottom: 0; }
 
     /* ─── CONFIRMATION ─── */
     .confirm-star {
@@ -441,8 +453,8 @@
 <main>
 
   <!-- STEP 1: PHONE GATE -->
-  <div class="card" id="step-phone">
-    <div>
+  <div id="step-phone">
+    <div class="card">
       <div class="card-title">Welcome</div>
       <div class="card-sub">Enter your phone number to get started</div>
       <div class="form-group">
@@ -454,112 +466,108 @@
   </div>
 
   <!-- STEP 2: BOOKING FORM -->
-  <div class="card" id="step-booking">
-    <div class="card-title" id="booking-title">Book your visit</div>
-    <div class="card-sub">Cha Nails &amp; Spa · Houston</div>
-
+  <div id="step-booking">
+    <!-- Title, sub, notice live ABOVE the card -->
+    <div class="booking-meta">
+      <div class="card-title" id="booking-title">Book your visit</div>
+      <div class="card-sub">Cha Nails &amp; Spa · Houston</div>
+    </div>
     <div class="notice">
       Please note: appointments require at least 24 hours advance notice. Same-day requests may be accommodated based on availability — feel free to call us.
     </div>
 
-    <!-- Name -->
-    <div class="grid-2">
-      <div class="form-group">
-        <label for="first-name">First Name</label>
-        <input type="text" id="first-name" placeholder="Jane" />
-      </div>
-      <div class="form-group">
-        <label for="last-name">Last Name</label>
-        <input type="text" id="last-name" placeholder="Doe" />
-      </div>
-    </div>
-
-    <!-- Date -->
-    <div class="form-group">
-      <label for="appt-date">Preferred Date</label>
-      <input type="date" id="appt-date" />
-    </div>
-
-    <!-- Appointment blocks container -->
-    <div id="appt-blocks-container">
-      <div class="appt-block" id="appt-block-1" data-index="1">
-        <!-- Services -->
-        <div class="pills-label">Services</div>
-        <div class="pills" id="pills-1">
-          <span class="pill" data-service="Pedicure" data-dur="45min" onclick="togglePill(this,1)">Pedicure <span class="pill-duration">45min</span></span>
-          <span class="pill" data-service="Manicure" data-dur="30min" onclick="togglePill(this,1)">Manicure <span class="pill-duration">30min</span></span>
-          <span class="pill" data-service="Gel Manicure" data-dur="30min" onclick="togglePill(this,1)">Gel Manicure <span class="pill-duration">30min</span></span>
-          <span class="pill" data-service="Full Set" data-dur="45min" onclick="togglePill(this,1)">Full Set <span class="pill-duration">45min</span></span>
-          <span class="pill" data-service="Fill-In" data-dur="45min" onclick="togglePill(this,1)">Fill-In <span class="pill-duration">45min</span></span>
-          <span class="pill" data-service="Color Dipping" data-dur="45min" onclick="togglePill(this,1)">Color Dipping <span class="pill-duration">45min</span></span>
-          <span class="pill" data-service="Wax" data-dur="15min" onclick="togglePill(this,1)">Wax <span class="pill-duration">15min</span></span>
-          <span class="pill" data-service="Polish Change" data-dur="15min" onclick="togglePill(this,1)">Polish Change <span class="pill-duration">15min</span></span>
-          <span class="pill" data-service="Repair" data-dur="15min" onclick="togglePill(this,1)">Repair <span class="pill-duration">15min</span></span>
-          <span class="pill" data-service="Other" data-dur="15min" onclick="togglePill(this,1)">Other <span class="pill-duration">15min</span></span>
-        </div>
-        <div class="other-input-wrap" id="other-wrap-1">
-          <div class="form-group" style="margin-bottom:0">
-            <input type="text" id="other-text-1" placeholder="Describe your service request…" />
-          </div>
-        </div>
-
-        <!-- Technician multi-select -->
+    <div class="card">
+      <!-- Name: 2-col grid for first + last only -->
+      <div class="grid-2">
         <div class="form-group">
-          <label>Technician</label>
-          <div class="custom-dropdown" id="tech-dropdown-1">
-            <div class="dropdown-trigger" onclick="toggleDropdown('tech-dropdown-1')">
-              <span class="placeholder" id="tech-display-1">Any Tech</span>
-              <span class="dropdown-caret">▼</span>
+          <label for="first-name">First Name</label>
+          <input type="text" id="first-name" placeholder="Jane" />
+        </div>
+        <div class="form-group">
+          <label for="last-name">Last Name</label>
+          <input type="text" id="last-name" placeholder="Doe" />
+        </div>
+      </div>
+
+      <!-- Date -->
+      <div class="form-group">
+        <label for="appt-date">Preferred Date</label>
+        <input type="date" id="appt-date" />
+      </div>
+
+      <!-- Appointment blocks container -->
+      <div id="appt-blocks-container">
+        <div class="appt-block" id="appt-block-1" data-index="1">
+          <!-- Services -->
+          <div class="pills-label">Services</div>
+          <div class="pills" id="pills-1">
+            <span class="pill" data-service="Pedicure"      data-dur="45min" onclick="togglePill(this,1)">Pedicure <span class="pill-duration">45min</span></span>
+            <span class="pill" data-service="Manicure"      data-dur="30min" onclick="togglePill(this,1)">Manicure <span class="pill-duration">30min</span></span>
+            <span class="pill" data-service="Gel Manicure"  data-dur="30min" onclick="togglePill(this,1)">Gel Manicure <span class="pill-duration">30min</span></span>
+            <span class="pill" data-service="Full Set"      data-dur="45min" onclick="togglePill(this,1)">Full Set <span class="pill-duration">45min</span></span>
+            <span class="pill" data-service="Fill-In"       data-dur="45min" onclick="togglePill(this,1)">Fill-In <span class="pill-duration">45min</span></span>
+            <span class="pill" data-service="Color Dipping" data-dur="45min" onclick="togglePill(this,1)">Color Dipping <span class="pill-duration">45min</span></span>
+            <span class="pill" data-service="Wax"           data-dur="15min" onclick="togglePill(this,1)">Wax <span class="pill-duration">15min</span></span>
+            <span class="pill" data-service="Polish Change" data-dur="15min" onclick="togglePill(this,1)">Polish Change <span class="pill-duration">15min</span></span>
+            <span class="pill" data-service="Repair"        data-dur="15min" onclick="togglePill(this,1)">Repair <span class="pill-duration">15min</span></span>
+            <span class="pill" data-service="Other"         data-dur="15min" onclick="togglePill(this,1)">Other <span class="pill-duration">15min</span></span>
+          </div>
+          <div class="other-input-wrap" id="other-wrap-1">
+            <div class="form-group">
+              <input type="text" id="other-text-1" placeholder="Describe your service request…" />
             </div>
-            <div class="dropdown-list" id="tech-list-1">
-              <div class="dropdown-option selected-opt" data-value="Any Tech" onclick="toggleTech(this,'tech-dropdown-1')">
-                <span class="opt-check"></span> Any Tech
+          </div>
+
+          <!-- Technician multi-select -->
+          <div class="form-group">
+            <label>Technician</label>
+            <div class="custom-dropdown" id="tech-dropdown-1">
+              <div class="dropdown-trigger" onclick="toggleDropdown('tech-dropdown-1')">
+                <span class="placeholder" id="tech-display-1">Any Tech</span>
+                <span class="dropdown-caret">▼</span>
               </div>
-              <div class="dropdown-option" data-value="Bae" onclick="toggleTech(this,'tech-dropdown-1')">
-                <span class="opt-check"></span> Bae
-              </div>
-              <div class="dropdown-option" data-value="Hannah" onclick="toggleTech(this,'tech-dropdown-1')">
-                <span class="opt-check"></span> Hannah
-              </div>
-              <div class="dropdown-option" data-value="Jessica" onclick="toggleTech(this,'tech-dropdown-1')">
-                <span class="opt-check"></span> Jessica
-              </div>
-              <div class="dropdown-option" data-value="Kim" onclick="toggleTech(this,'tech-dropdown-1')">
-                <span class="opt-check"></span> Kim
+              <div class="dropdown-list" id="tech-list-1">
+                <div class="dropdown-option selected-opt" data-value="Any Tech" onclick="toggleTech(this,'tech-dropdown-1')"><span class="opt-check"></span> Any Tech</div>
+                <div class="dropdown-option" data-value="Bae"     onclick="toggleTech(this,'tech-dropdown-1')"><span class="opt-check"></span> Bae</div>
+                <div class="dropdown-option" data-value="Hannah"  onclick="toggleTech(this,'tech-dropdown-1')"><span class="opt-check"></span> Hannah</div>
+                <div class="dropdown-option" data-value="Jessica" onclick="toggleTech(this,'tech-dropdown-1')"><span class="opt-check"></span> Jessica</div>
+                <div class="dropdown-option" data-value="Kim"     onclick="toggleTech(this,'tech-dropdown-1')"><span class="opt-check"></span> Kim</div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Time single-select -->
-        <div class="form-group">
-          <label>Preferred Time</label>
-          <div class="custom-dropdown" id="time-dropdown-1">
-            <div class="dropdown-trigger" onclick="toggleDropdown('time-dropdown-1')">
-              <span class="placeholder" id="time-display-1">Select a time…</span>
-              <span class="dropdown-caret">▼</span>
+          <!-- Time single-select -->
+          <div class="form-group">
+            <label>Preferred Time</label>
+            <div class="custom-dropdown" id="time-dropdown-1">
+              <div class="dropdown-trigger" onclick="toggleDropdown('time-dropdown-1')">
+                <span class="placeholder" id="time-display-1">Select a time…</span>
+                <span class="dropdown-caret">▼</span>
+              </div>
+              <div class="dropdown-list" id="time-list-1"></div>
             </div>
-            <div class="dropdown-list" id="time-list-1"></div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Buttons -->
-    <div class="btn-row">
-      <button class="btn btn-ghost" onclick="addAppointment()">+ Add another appointment</button>
-      <button class="btn btn-cancel" onclick="cancelBooking()">Cancel</button>
-      <button class="btn btn-primary" onclick="submitBooking()">Book Now</button>
+      <!-- Buttons -->
+      <div class="btn-row">
+        <button class="btn btn-ghost"   onclick="addAppointment()">+ Add another appointment</button>
+        <button class="btn btn-cancel"  onclick="cancelBooking()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitBooking()">Book Now</button>
+      </div>
     </div>
   </div>
 
   <!-- STEP 3: CONFIRMATION -->
-  <div class="card" id="step-confirm" style="text-align:center; padding: 3rem 2rem;">
-    <span class="confirm-star">✦ &nbsp; ✦ &nbsp; ✦</span>
-    <div class="confirm-title">Your appointment is confirmed ✦</div>
-    <div class="confirm-summary" id="confirm-summary"></div>
-    <div class="btn-row" style="justify-content:center; margin-top:2rem;">
-      <button class="btn btn-ghost" onclick="bookAnother()">Book another visit</button>
+  <div id="step-confirm">
+    <div class="card" style="text-align:center; padding: 3rem 2rem;">
+      <span class="confirm-star">✦ &nbsp; ✦ &nbsp; ✦</span>
+      <div class="confirm-title">Your appointment is confirmed ✦</div>
+      <div class="confirm-summary" id="confirm-summary"></div>
+      <div class="btn-row" style="justify-content:center; margin-top:2rem;">
+        <button class="btn btn-ghost" onclick="bookAnother()">Book another visit</button>
+      </div>
     </div>
   </div>
 
@@ -870,7 +878,7 @@
   }
 
   // ── Helpers ──
-  function show(id) { document.getElementById(id).style.display = 'flex'; }
+  function show(id) { document.getElementById(id).style.display = 'block'; }
   function hide(id) { document.getElementById(id).style.display = 'none'; }
 
   function formatDate(str) {
