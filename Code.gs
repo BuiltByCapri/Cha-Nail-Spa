@@ -6,7 +6,7 @@
 //   → pencil → New version → Deploy (URL stays the same)
 // ============================================================
 
-const SHEET_ID        = '1Hh5E7bdDYOylfBzAe9KTbRmqIxuY2F7q-9z0YvE0lw0';
+const SHEET_ID        = '1jRCk5QfckPYOdYAzu1fWqumg47F7r4t8CWTWJ0ljvZw';
 const SHEET_NAME      = 'Sheet1';
 const SALON_NAME      = 'Cha Nails & Spa';
 const SALON_PHONE     = '(713) 622-6245';
