@@ -399,6 +399,83 @@
     }
     .error-banner.visible { display: block; }
 
+    /* ─── MULTI-PERSON PHONE STEP ─── */
+    .phone-person-row + .phone-person-row {
+      margin-top: 1.2rem;
+      padding-top: 1.2rem;
+      border-top: 0.5px solid var(--border);
+    }
+    .phone-person-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.6rem;
+    }
+    .phone-person-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent-lt);
+      font-weight: 500;
+    }
+    .phone-person-remove {
+      background: none;
+      border: none;
+      font-size: 0.78rem;
+      color: #aaa;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+    }
+    .phone-person-remove:hover { color: #7a3a25; }
+    .phone-lookup-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-start;
+    }
+    .phone-lookup-row .form-group { flex: 1; margin-bottom: 0; }
+    .phone-lookup-row .btn-lookup {
+      margin-top: 1.6rem;
+      white-space: nowrap;
+      padding: 0.65rem 1rem;
+      font-size: 0.8rem;
+    }
+    .phone-person-result {
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--accent);
+      min-height: 1.1rem;
+    }
+    .phone-person-result .result-name { font-weight: 500; }
+    .phone-person-name-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+      margin-top: 0.5rem;
+    }
+    .phone-person-name-fields .form-group { margin-bottom: 0; }
+
+    /* ─── PER-PERSON BLOCK HEADER ─── */
+    .person-block-header {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .person-block-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1.1rem;
+      color: var(--accent-lt);
+    }
+    .person-name-inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+      margin-bottom: 1rem;
+    }
+    .person-name-inputs .form-group { margin-bottom: 0; }
+
     /* ─── INLINE LOADING STATE ─── */
     .btn[disabled] { opacity: 0.55; cursor: not-allowed; transform: none; }
 
@@ -486,11 +563,18 @@
     <div class="card">
       <div class="card-title">Welcome</div>
       <div class="card-sub">Enter your phone number to get started</div>
-      <div class="form-group">
-        <label for="phone-input">Phone Number</label>
-        <input type="tel" id="phone-input" placeholder="(713) 555-0000" maxlength="14" />
+
+      <!-- Person rows injected here by JS -->
+      <div id="phone-persons-list"></div>
+
+      <!-- "Add another person" shown after first lookup -->
+      <div id="add-person-wrap" style="display:none; margin-top:1rem;">
+        <button class="btn btn-ghost" onclick="addPersonRow()">+ Add another person</button>
       </div>
-      <button class="btn btn-continue" onclick="handlePhoneContinue()">Continue</button>
+
+      <div style="margin-top:1.4rem; display:flex; gap:0.8rem; flex-wrap:wrap;">
+        <button class="btn btn-continue" id="phone-continue-btn" onclick="handlePhoneContinue()">Continue</button>
+      </div>
     </div>
   </div>
 
@@ -506,85 +590,20 @@
     </div>
 
     <div class="card">
-      <!-- Name: 2-col grid for first + last only -->
-      <div class="grid-2">
-        <div class="form-group">
-          <label for="first-name">First Name</label>
-          <input type="text" id="first-name" placeholder="Jane" />
-        </div>
-        <div class="form-group">
-          <label for="last-name">Last Name</label>
-          <input type="text" id="last-name" placeholder="Doe" />
-        </div>
-      </div>
-
-      <!-- Date -->
+      <!-- Date (shared across all persons) -->
       <div class="form-group">
         <label for="appt-date">Preferred Date</label>
         <input type="date" id="appt-date" />
       </div>
 
-      <!-- Appointment blocks container -->
-      <div id="appt-blocks-container">
-        <div class="appt-block" id="appt-block-1" data-index="1">
-          <!-- Services -->
-          <div class="pills-label">Services</div>
-          <div class="pills" id="pills-1">
-            <span class="pill" data-service="Pedicure"      data-dur="45min" onclick="togglePill(this,1)">Pedicure <span class="pill-duration">45min</span></span>
-            <span class="pill" data-service="Manicure"      data-dur="30min" onclick="togglePill(this,1)">Manicure <span class="pill-duration">30min</span></span>
-            <span class="pill" data-service="Gel Manicure"  data-dur="30min" onclick="togglePill(this,1)">Gel Manicure <span class="pill-duration">30min</span></span>
-            <span class="pill" data-service="Full Set"      data-dur="45min" onclick="togglePill(this,1)">Full Set <span class="pill-duration">45min</span></span>
-            <span class="pill" data-service="Fill-In"       data-dur="45min" onclick="togglePill(this,1)">Fill-In <span class="pill-duration">45min</span></span>
-            <span class="pill" data-service="Color Dipping" data-dur="45min" onclick="togglePill(this,1)">Color Dipping <span class="pill-duration">45min</span></span>
-            <span class="pill" data-service="Wax"           data-dur="15min" onclick="togglePill(this,1)">Wax <span class="pill-duration">15min</span></span>
-            <span class="pill" data-service="Polish Change" data-dur="15min" onclick="togglePill(this,1)">Polish Change <span class="pill-duration">15min</span></span>
-            <span class="pill" data-service="Repair"        data-dur="15min" onclick="togglePill(this,1)">Repair <span class="pill-duration">15min</span></span>
-            <span class="pill" data-service="Other"         data-dur="15min" onclick="togglePill(this,1)">Other <span class="pill-duration">15min</span></span>
-          </div>
-          <div class="other-input-wrap" id="other-wrap-1">
-            <div class="form-group">
-              <input type="text" id="other-text-1" placeholder="Describe your service request…" />
-            </div>
-          </div>
+      <!-- Appointment blocks — one per person, injected by JS -->
+      <div id="appt-blocks-container"></div>
 
-          <!-- Technician multi-select -->
-          <div class="form-group">
-            <label>Technician</label>
-            <div class="custom-dropdown" id="tech-dropdown-1">
-              <div class="dropdown-trigger" onclick="toggleDropdown('tech-dropdown-1')">
-                <span class="placeholder" id="tech-display-1">Any Tech</span>
-                <span class="dropdown-caret">▼</span>
-              </div>
-              <div class="dropdown-list" id="tech-list-1">
-                <div class="dropdown-option selected-opt" data-value="Any Tech" onclick="toggleTech(this,'tech-dropdown-1')"><span class="opt-check"></span> Any Tech</div>
-                <div class="dropdown-option" data-value="Bae"     onclick="toggleTech(this,'tech-dropdown-1')"><span class="opt-check"></span> Bae</div>
-                <div class="dropdown-option" data-value="Hannah"  onclick="toggleTech(this,'tech-dropdown-1')"><span class="opt-check"></span> Hannah</div>
-                <div class="dropdown-option" data-value="Jessica" onclick="toggleTech(this,'tech-dropdown-1')"><span class="opt-check"></span> Jessica</div>
-                <div class="dropdown-option" data-value="Kim"     onclick="toggleTech(this,'tech-dropdown-1')"><span class="opt-check"></span> Kim</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Time single-select -->
-          <div class="form-group">
-            <label>Preferred Time</label>
-            <div class="custom-dropdown" id="time-dropdown-1">
-              <div class="dropdown-trigger" onclick="toggleDropdown('time-dropdown-1')">
-                <span class="placeholder" id="time-display-1">Select a time…</span>
-                <span class="dropdown-caret">▼</span>
-              </div>
-              <div class="dropdown-list" id="time-list-1"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Generic error (network failure etc.) -->
+      <!-- Generic error -->
       <div class="error-banner" id="booking-error"></div>
 
       <!-- Buttons -->
       <div class="btn-row">
-        <button class="btn btn-ghost"   onclick="addAppointment()">+ Add another appointment</button>
         <button class="btn btn-cancel"  onclick="cancelBooking()">Cancel</button>
         <button class="btn btn-primary" onclick="submitBooking()">Book Now</button>
       </div>
@@ -613,54 +632,149 @@
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxaQvPn4xRqNrTIwN53QDHwYL0Dkm0aYEIuJfnLXfTn-LAesoP4euY10jX2typEEIfO/exec';
 
   // ── State ──
-  let apptCount     = 1;
-  let currentPhone  = '';
-  const techSelections  = { 1: ['Any Tech'] };
-  const timeSelections  = { 1: null };
-  const unavailableSlots = { 1: new Set() };
+  let apptCount      = 0;
+  let currentPhone   = '';
+  const techSelections   = {};
+  const timeSelections   = {};
+  const unavailableSlots = {};
+  // persons[i] = { phone, firstName, lastName } — populated in Step 1
+  const persons = [];
+  let personRowCount = 0; // how many phone rows exist in Step 1
 
-  // ── Phone formatting ──
-  document.getElementById('phone-input').addEventListener('input', function () {
-    let v = this.value.replace(/\D/g, '').slice(0, 10);
+  // ── Phone formatting helper ──
+  function formatPhoneInput(input) {
+    let v = input.value.replace(/\D/g, '').slice(0, 10);
     if (v.length >= 7)      v = '(' + v.slice(0,3) + ') ' + v.slice(3,6) + '-' + v.slice(6);
     else if (v.length >= 4) v = '(' + v.slice(0,3) + ') ' + v.slice(3);
     else if (v.length >= 1) v = '(' + v;
-    this.value = v;
-  });
+    input.value = v;
+  }
 
-  // ── Step 1: phone gate ──
-  async function handlePhoneContinue() {
-    const raw = document.getElementById('phone-input').value.replace(/\D/g, '');
-    currentPhone = raw;
+  // ── Build a phone-person row in Step 1 ──
+  function buildPersonRow(rowIdx) {
+    const isFirst = rowIdx === 0;
+    const row = document.createElement('div');
+    row.className = 'phone-person-row';
+    row.id = 'phone-person-row-' + rowIdx;
+    row.innerHTML = `
+      <div class="phone-person-header">
+        <span class="phone-person-label">${isFirst ? 'Your info' : 'Person ' + (rowIdx + 1)}</span>
+        ${!isFirst ? `<button class="phone-person-remove" onclick="removePersonRow(${rowIdx})">× Remove</button>` : ''}
+      </div>
+      <div class="phone-lookup-row">
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="tel" id="phone-input-${rowIdx}" placeholder="(713) 555-0000" maxlength="14" />
+        </div>
+        <button class="btn btn-ghost btn-lookup" onclick="lookupPersonRow(${rowIdx})">Look Up</button>
+      </div>
+      <div class="phone-person-result" id="phone-result-${rowIdx}"></div>
+      <div class="phone-person-name-fields" id="phone-name-fields-${rowIdx}" style="display:none">
+        <div class="form-group">
+          <label>First Name</label>
+          <input type="text" id="phone-first-${rowIdx}" placeholder="Jane" />
+        </div>
+        <div class="form-group">
+          <label>Last Name</label>
+          <input type="text" id="phone-last-${rowIdx}" placeholder="Doe" />
+        </div>
+      </div>
+    `;
+    document.getElementById('phone-persons-list').appendChild(row);
+    const input = document.getElementById('phone-input-' + rowIdx);
+    input.addEventListener('input', function() { formatPhoneInput(this); });
+    input.addEventListener('keydown', function(e) { if (e.key === 'Enter') lookupPersonRow(rowIdx); });
+    personRowCount++;
+  }
 
-    const btn = document.querySelector('#step-phone .btn-continue');
-    btn.disabled = true;
-    btn.textContent = 'Looking up…';
+  // Initialize the first person row on page load
+  buildPersonRow(0);
 
+  // ── Step 1: look up a specific person row ──
+  async function lookupPersonRow(rowIdx) {
+    const input  = document.getElementById('phone-input-' + rowIdx);
+    const result = document.getElementById('phone-result-' + rowIdx);
+    const nameFields = document.getElementById('phone-name-fields-' + rowIdx);
+    const raw = input.value.replace(/\D/g, '');
+    if (!raw) { result.textContent = 'Please enter a phone number.'; return; }
+
+    result.textContent = 'Looking up…';
     try {
       const res  = await fetch(`${SCRIPT_URL}?action=lookup&phone=${encodeURIComponent(raw)}`);
       const data = await res.json();
       if (data.found) {
-        document.getElementById('first-name').value = data.firstName;
-        document.getElementById('last-name').value  = data.lastName;
-        document.getElementById('booking-title').textContent = 'Welcome back, ' + data.firstName;
+        persons[rowIdx] = { phone: raw, firstName: data.firstName, lastName: data.lastName };
+        result.innerHTML = `<span class="result-name">✓ ${data.firstName} ${data.lastName}</span>`;
+        nameFields.style.display = 'none';
       } else {
-        document.getElementById('first-name').value = '';
-        document.getElementById('last-name').value  = '';
-        document.getElementById('booking-title').textContent = 'Welcome';
+        persons[rowIdx] = { phone: raw, firstName: '', lastName: '' };
+        result.textContent = 'New customer — please enter your name below.';
+        nameFields.style.display = 'grid';
+        document.getElementById('phone-first-' + rowIdx).focus();
       }
     } catch (_) {
-      document.getElementById('first-name').value = '';
-      document.getElementById('last-name').value  = '';
-      document.getElementById('booking-title').textContent = 'Welcome';
+      persons[rowIdx] = { phone: raw, firstName: '', lastName: '' };
+      result.textContent = 'Could not look up — enter name below.';
+      nameFields.style.display = 'grid';
     }
+    // Show "Add another person" and change button to "Continue to Booking"
+    document.getElementById('add-person-wrap').style.display = 'block';
+    const btn = document.getElementById('phone-continue-btn');
+    btn.textContent = 'Continue to Booking';
+    btn.onclick = proceedToBooking;
+  }
 
-    btn.disabled    = false;
-    btn.textContent = 'Continue';
+  // ── Step 1: "Continue" button (first click = look up person 0) ──
+  async function handlePhoneContinue() {
+    await lookupPersonRow(0);
+  }
 
+  // ── Step 1: add a new person row ──
+  function addPersonRow() {
+    buildPersonRow(personRowCount);
+    document.getElementById('phone-input-' + (personRowCount - 1)).focus();
+  }
+
+  // ── Step 1: remove a person row ──
+  function removePersonRow(rowIdx) {
+    const row = document.getElementById('phone-person-row-' + rowIdx);
+    if (row) row.remove();
+    delete persons[rowIdx];
+  }
+
+  // ── Step 1: proceed to Step 2 ──
+  function proceedToBooking() {
+    // Collect final name values (manual entry for new customers)
+    const activePeople = [];
+    for (let i = 0; i < personRowCount; i++) {
+      const row = document.getElementById('phone-person-row-' + i);
+      if (!row) continue; // was removed
+      const p = persons[i] || {};
+      const firstName = p.firstName || (document.getElementById('phone-first-' + i)?.value.trim() || '');
+      const lastName  = p.lastName  || (document.getElementById('phone-last-' + i)?.value.trim() || '');
+      activePeople.push({ phone: p.phone || currentPhone, firstName, lastName });
+    }
+    if (!activePeople.length) return;
+
+    currentPhone = activePeople[0].phone;
+
+    // Set date min
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     document.getElementById('appt-date').min = tomorrow.toISOString().split('T')[0];
+
+    // Build one appointment block per person
+    document.getElementById('appt-blocks-container').innerHTML = '';
+    apptCount = 0;
+    activePeople.forEach(function(person, i) {
+      addAppointmentForPerson(person.firstName, person.lastName, person.phone, i + 1, activePeople.length > 1);
+    });
+
+    // Update heading
+    const title = activePeople.length === 1
+      ? (activePeople[0].firstName ? 'Welcome' + (persons[0]?.firstName ? ' back' : '') + ', ' + activePeople[0].firstName : 'Book your visit')
+      : 'Book your visit';
+    document.getElementById('booking-title').textContent = title;
 
     show('step-booking');
     hide('step-phone');
@@ -844,19 +958,35 @@
     dd.querySelector('.dropdown-trigger').classList.remove('open');
   }
 
-  // ── Add appointment ──
-  function addAppointment() {
+  // ── Build an appointment block for a person ──
+  function addAppointmentForPerson(firstName, lastName, phone, position, multiPerson) {
     apptCount++;
     const idx = apptCount;
-    techSelections[idx] = ['Any Tech'];
-    timeSelections[idx] = null;
+    techSelections[idx]   = ['Any Tech'];
+    timeSelections[idx]   = null;
+    unavailableSlots[idx] = new Set();
+
+    const label = multiPerson
+      ? (firstName ? `${firstName} ${lastName}`.trim() : `Person ${position}`)
+      : '';
 
     const block = document.createElement('div');
     block.className = 'appt-block';
     block.id = 'appt-block-' + idx;
     block.dataset.index = idx;
+    block.dataset.phone = phone || '';
     block.innerHTML = `
-      <div class="appt-block-label">Appointment ${idx}</div>
+      ${label ? `<div class="person-block-header"><span class="person-block-name">${label}</span></div>` : ''}
+      <div class="person-name-inputs">
+        <div class="form-group">
+          <label>First Name</label>
+          <input type="text" class="block-first-name" value="${escHtml(firstName)}" placeholder="Jane" />
+        </div>
+        <div class="form-group">
+          <label>Last Name</label>
+          <input type="text" class="block-last-name" value="${escHtml(lastName)}" placeholder="Doe" />
+        </div>
+      </div>
 
       <div class="pills-label">Services</div>
       <div class="pills" id="pills-${idx}">
@@ -906,17 +1036,10 @@
       </div>
     `;
     document.getElementById('appt-blocks-container').appendChild(block);
+  }
 
-    // First appt label (retroactively)
-    if (apptCount === 2) {
-      const first = document.getElementById('appt-block-1');
-      if (!first.querySelector('.appt-block-label')) {
-        const lbl = document.createElement('div');
-        lbl.className = 'appt-block-label';
-        lbl.textContent = 'Appointment 1';
-        first.prepend(lbl);
-      }
-    }
+  function escHtml(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
   // ── Cancel ──
@@ -934,9 +1057,7 @@
 
   // ── Submit ──
   async function submitBooking() {
-    const firstName = document.getElementById('first-name').value.trim();
-    const lastName  = document.getElementById('last-name').value.trim();
-    const date      = document.getElementById('appt-date').value;
+    const date = document.getElementById('appt-date').value;
 
     const banner = document.getElementById('booking-error');
     banner.textContent = '';
@@ -954,8 +1075,14 @@
         }
         return `${svc} ${p.dataset.dur}`;
       });
-      const techs = techSelections[i] || ['Any Tech'];
+      const techs     = techSelections[i] || ['Any Tech'];
+      const firstName = (block.querySelector('.block-first-name')?.value || '').trim();
+      const lastName  = (block.querySelector('.block-last-name')?.value || '').trim();
+      const phone     = block.dataset.phone || currentPhone;
       appointments.push({
+        firstName,
+        lastName,
+        phone,
         services,
         technician: techs.join(', '),
         time: timeSelections[i] || '',
@@ -971,9 +1098,9 @@
         const appt = appointments[ai];
         const params = new URLSearchParams({
           action:     'book',
-          phone:      currentPhone,
-          firstName,
-          lastName,
+          phone:      appt.phone,
+          firstName:  appt.firstName,
+          lastName:   appt.lastName,
           date,
           technician: appt.technician,
           time:       appt.time,
@@ -1025,9 +1152,10 @@
         }
       }
 
-      let summary = `<strong>${firstName} ${lastName}</strong><br>${formatDate(date)}<br><br>`;
+      let summary = `${formatDate(date)}<br><br>`;
       appointments.forEach((a, i) => {
-        if (appointments.length > 1) summary += `<strong>Appointment ${i + 1}</strong><br>`;
+        const name = `${a.firstName} ${a.lastName}`.trim() || `Person ${i + 1}`;
+        summary += `<strong>${name}</strong><br>`;
         summary += `${a.services.length ? a.services.join(', ') : '—'}<br>`;
         summary += `With: ${a.technician}<br>`;
         summary += `Time: ${a.time || 'Not specified'}`;
@@ -1064,49 +1192,24 @@
   }
 
   function resetForm() {
-    apptCount = 1;
+    apptCount = 0;
     Object.keys(techSelections).forEach(k => delete techSelections[k]);
     Object.keys(timeSelections).forEach(k => delete timeSelections[k]);
     Object.keys(unavailableSlots).forEach(k => delete unavailableSlots[k]);
-    techSelections[1]  = ['Any Tech'];
-    timeSelections[1]  = null;
-    unavailableSlots[1] = new Set();
+    persons.length = 0;
 
-    document.getElementById('phone-input').value   = '';
-    document.getElementById('first-name').value    = '';
-    document.getElementById('last-name').value     = '';
-    document.getElementById('appt-date').value     = '';
+    document.getElementById('appt-date').value = '';
+    document.getElementById('appt-blocks-container').innerHTML = '';
 
-    // Remove extra appt blocks
-    const container = document.getElementById('appt-blocks-container');
-    [...container.querySelectorAll('.appt-block')].slice(1).forEach(b => b.remove());
-    // Remove injected label from first block
-    const firstLabel = document.querySelector('#appt-block-1 .appt-block-label');
-    if (firstLabel) firstLabel.remove();
-
-    // Reset pills
-    document.querySelectorAll('#pills-1 .pill.selected').forEach(p => p.classList.remove('selected'));
-    const ow = document.getElementById('other-wrap-1');
-    if (ow) ow.classList.remove('visible');
-
-    // Reset tech display
-    document.querySelectorAll('#tech-list-1 .dropdown-option').forEach(o => o.classList.remove('selected-opt'));
-    document.querySelector('#tech-list-1 [data-value="Any Tech"]').classList.add('selected-opt');
-    document.getElementById('tech-display-1').textContent = 'Any Tech';
-
-    // Reset time display and rebuild list clean
-    document.getElementById('time-display-1').textContent = 'Select a time…';
-    document.getElementById('time-display-1').classList.add('placeholder');
-    const tl = document.getElementById('time-list-1');
-    tl.innerHTML = '';
-    delete tl.dataset.built;
+    // Reset Step 1 person rows
+    document.getElementById('phone-persons-list').innerHTML = '';
+    document.getElementById('add-person-wrap').style.display = 'none';
+    personRowCount = 0;
+    buildPersonRow(0);
+    const btn = document.getElementById('phone-continue-btn');
+    btn.textContent = 'Continue';
+    btn.onclick = handlePhoneContinue;
   }
-
-  // ── Init ──
-  // Build time list for first appointment on first open
-  document.getElementById('time-dropdown-1')
-    .querySelector('.dropdown-trigger')
-    .addEventListener('click', function () { buildTimeList(1); });
 </script>
 </body>
 </html>
