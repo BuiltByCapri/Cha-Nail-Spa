@@ -672,16 +672,35 @@
     const wrap = document.getElementById('other-wrap-' + idx);
     const hasOther = !!document.querySelector('#pills-' + idx + ' .pill[data-service="Other"].selected');
     if (wrap) wrap.classList.toggle('visible', hasOther);
+    // Re-check availability since duration affects which start times are open.
+    triggerAvailabilityCheck(idx);
   }
 
   // ── Availability checking ──
-  async function fetchAvailability(technician, date) {
+  function getSelectedServices(idx) {
+    const block = document.getElementById('appt-block-' + idx);
+    if (!block) return '';
+    return [...block.querySelectorAll('.pill.selected')].map(p => {
+      const svc = p.dataset.service;
+      if (svc === 'Other') {
+        const desc = document.getElementById('other-text-' + idx)?.value.trim();
+        return desc ? `Other (${desc}) ${p.dataset.dur}` : `Other ${p.dataset.dur}`;
+      }
+      return `${svc} ${p.dataset.dur}`;
+    }).join(', ');
+  }
+
+  async function fetchAvailability(technician, date, idx) {
+    idx = idx || 1;
     if (!technician || !date) return;
+    const services = getSelectedServices(idx);
     try {
-      const res  = await fetch(`${SCRIPT_URL}?action=availability&technician=${encodeURIComponent(technician)}&date=${encodeURIComponent(date)}`);
+      const params = new URLSearchParams({ action: 'availability', technician, date });
+      if (services) params.set('services', services);
+      const res  = await fetch(`${SCRIPT_URL}?${params}`);
       const data = await res.json();
-      unavailableSlots[1] = new Set(data.unavailableSlots || []);
-      rebuildTimeList(1);
+      unavailableSlots[idx] = new Set(data.unavailableSlots || []);
+      rebuildTimeList(idx);
     } catch (_) { /* silently skip if offline */ }
   }
 
@@ -700,11 +719,11 @@
     buildTimeList(idx);
   }
 
-  function triggerAvailabilityCheck() {
+  function triggerAvailabilityCheck(idx) {
+    idx = idx || 1;
     const date  = document.getElementById('appt-date').value;
-    const techs = techSelections[1] || ['Any Tech'];
-    // Only check when a single specific tech or Any Tech is chosen alongside a date
-    if (date && techs.length === 1) fetchAvailability(techs[0], date);
+    const techs = techSelections[idx] || ['Any Tech'];
+    if (date) fetchAvailability(techs.join(', '), date, idx);
   }
 
   // Wire date change

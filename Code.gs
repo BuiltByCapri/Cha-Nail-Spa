@@ -17,7 +17,7 @@ function doGet(e) {
   // for GET requests when deployed as "Execute as: Me / Anyone can access".
   const action = e.parameter.action;
   if (action === 'lookup')       return lookupPhone(e.parameter.phone);
-  if (action === 'availability') return checkAvailability(e.parameter.technician, e.parameter.date);
+  if (action === 'availability') return checkAvailability(e.parameter.technician, e.parameter.date, e.parameter.services);
   if (action === 'book')         return bookAppointment(e.parameter);
   if (action === 'debug')        return debugInfo(e.parameter.technician, e.parameter.date);
   return json({ error: 'Unknown action' });
@@ -41,23 +41,30 @@ function lookupPhone(phone) {
   return json({ found: false });
 }
 
-// GET ?action=availability&technician=Hannah%2C%20Jessica&date=2026-04-01
-// Returns { unavailableSlots: [...] } — slots blocked for this tech selection.
-// When multiple techs are selected, a slot is only blocked if ALL of them
-// are unavailable (so the dropdown still shows times when at least one is free).
-function checkAvailability(technician, date) {
+// GET ?action=availability&technician=Hannah%2C%20Jessica&date=2026-04-01&services=Pedicure+45min
+// Returns { unavailableSlots: [...] } — start times where the new booking
+// (given its duration) would overlap any existing booking.
+// When multiple techs selected, a slot is only blocked if ALL are unavailable.
+function checkAvailability(technician, date, services) {
   if (!technician || !date) return json({ unavailableSlots: [] });
 
   const rows  = getRows();
   const techs = technician.split(',').map(function(t) { return t.trim(); });
 
+  function unavailableStarts(tech) {
+    const existing = getUnavailableSlots(tech, date, rows);
+    // A start time is unavailable if any slot the new booking would occupy is taken.
+    return new Set(allTimeSlots().filter(function(slot) {
+      return getBlockedSlots(slot, services || '').some(function(s) { return existing.has(s); });
+    }));
+  }
+
   if (techs.length === 1) {
-    const unavailable = getUnavailableSlots(techs[0], date, rows);
-    return json({ unavailableSlots: [...unavailable] });
+    return json({ unavailableSlots: [...unavailableStarts(techs[0])] });
   }
 
   // Multi-tech: only block a slot when ALL selected techs are unavailable.
-  const setsPerTech = techs.map(function(t) { return getUnavailableSlots(t, date, rows); });
+  const setsPerTech = techs.map(unavailableStarts);
   const unavailable = allTimeSlots().filter(function(slot) {
     return setsPerTech.every(function(s) { return s.has(slot); });
   });
@@ -78,15 +85,17 @@ function bookAppointment(params) {
   const rows  = getRows();
   const techs = technician.split(',').map(function(t) { return t.trim(); });
 
-  // Determine which of the selected techs are booked at this time.
+  // A tech is "booked" if any slot the new booking would occupy is already taken.
+  const newBookingSlots = getBlockedSlots(time, services);
   const bookedTechs = techs.filter(function(t) {
-    return getUnavailableSlots(t, date, rows).has(time);
+    const unavail = getUnavailableSlots(t, date, rows);
+    return newBookingSlots.some(function(slot) { return unavail.has(slot); });
   });
   const freeTechs = techs.filter(function(t) { return bookedTechs.indexOf(t) === -1; });
 
   if (bookedTechs.length > 0 && freeTechs.length > 0) {
     // Some techs booked, some free → partial conflict.
-    const next = findNextAvailable(bookedTechs[0], date, time, rows);
+    const next = findNextAvailable(bookedTechs[0], date, time, rows, services);
     const bookedStr = bookedTechs.join(' and ');
     const freeStr   = freeTechs.join(' and ');
     return json({
@@ -101,7 +110,7 @@ function bookAppointment(params) {
 
   if (bookedTechs.length === techs.length) {
     // All selected techs are booked → full conflict.
-    const next = findNextAvailable(technician, date, time, rows);
+    const next = findNextAvailable(technician, date, time, rows, services);
     return json({
       success:       false,
       conflict:      true,
@@ -171,13 +180,15 @@ function parseTotalDuration(servicesStr) {
 
 // ── Next-available helper ─────────────────────────────────────────────────────
 
-function findNextAvailable(technician, date, requestedTime, rows) {
+function findNextAvailable(technician, date, requestedTime, rows, services) {
   const unavailable = getUnavailableSlots(technician, date, rows);
   const reqMin      = timeToMinutes(requestedTime);
 
   for (const slot of allTimeSlots()) {
     if (timeToMinutes(slot) <= reqMin) continue;
-    if (!unavailable.has(slot)) return slot;
+    // Check that the entire new booking duration fits without overlap.
+    const newSlots = getBlockedSlots(slot, services || '');
+    if (newSlots.every(function(s) { return !unavailable.has(s); })) return slot;
   }
 
   return null;
