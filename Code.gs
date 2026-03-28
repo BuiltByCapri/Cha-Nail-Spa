@@ -19,6 +19,7 @@ function doGet(e) {
   if (action === 'lookup')       return lookupPhone(e.parameter.phone);
   if (action === 'availability') return checkAvailability(e.parameter.technician, e.parameter.date);
   if (action === 'book')         return bookAppointment(e.parameter);
+  if (action === 'debug')        return debugInfo(e.parameter.technician, e.parameter.date);
   return json({ error: 'Unknown action' });
 }
 
@@ -211,4 +212,35 @@ function json(obj) {
   return ContentService
     .createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ── Debug endpoint ────────────────────────────────────────────────────────────
+// GET ?action=debug&technician=Bae&date=2026-03-30
+function debugInfo(technician, date) {
+  const rows = getRows();
+  const rowsData = rows.map(function(r) {
+    const rawDate = r[3];
+    const rawTime = r[5];
+    const fmtDate = rawDate instanceof Date
+      ? Utilities.formatDate(rawDate, Session.getScriptTimeZone(), 'yyyy-MM-dd')
+      : String(rawDate);
+    return {
+      phone:    String(r[0]),
+      rawDate:  String(rawDate),
+      dateType: rawDate instanceof Date ? 'Date' : typeof rawDate,
+      fmtDate:  fmtDate,
+      tech:     String(r[4]),
+      rawTime:  String(rawTime),
+      timeType: rawTime instanceof Date ? 'Date' : typeof rawTime,
+      services: String(r[6]),
+    };
+  });
+
+  let unavailable = [];
+  if (technician && date) {
+    const slots = getUnavailableSlots(technician, date, rows);
+    unavailable = [...slots];
+  }
+
+  return json({ tz: Session.getScriptTimeZone(), rows: rowsData, unavailable: unavailable });
 }
