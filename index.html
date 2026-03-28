@@ -948,7 +948,8 @@
     bookBtn.textContent = 'Booking…';
 
     try {
-      for (const appt of appointments) {
+      for (let ai = 0; ai < appointments.length; ai++) {
+        const appt = appointments[ai];
         const params = new URLSearchParams({
           action:     'book',
           phone:      currentPhone,
@@ -962,7 +963,32 @@
         const res  = await fetch(`${SCRIPT_URL}?${params}`);
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Booking failed — please try another time.');
+        if (!data.success) {
+          if (data.conflict) {
+            // Build a specific message naming the unavailable tech,
+            // any other techs in this booking that are still available,
+            // and the next open time slot.
+            const otherTechs = appointments
+              .filter((_, j) => j !== ai)
+              .map(a => a.technician)
+              .filter(t => t && t !== appt.technician);
+            let msg = `${appt.technician} is unavailable at ${appt.time}.`;
+            if (otherTechs.length > 0) {
+              msg += ` ${otherTechs.join(' and ')} can see you at that time.`;
+            }
+            if (data.nextAvailable) {
+              msg += ` Please choose another technician or update your time to ${data.nextAvailable}.`;
+            } else {
+              msg += ` Please choose another technician or a different time.`;
+            }
+            banner.textContent = msg;
+            banner.classList.add('visible');
+            bookBtn.disabled    = false;
+            bookBtn.textContent = 'Book Now';
+            return;
+          }
+          throw new Error(data.error || 'Booking failed — please try another time.');
+        }
       }
 
       let summary = `<strong>${firstName} ${lastName}</strong><br>${formatDate(date)}<br><br>`;
@@ -977,7 +1003,9 @@
       hide('step-booking');
       show('step-confirm');
     } catch (err) {
-      banner.textContent = 'Something went wrong — please try again or call us at (713) 622-6245.';
+      banner.textContent = err.message && !err.message.startsWith('HTTP')
+        ? err.message
+        : 'Something went wrong — please try again or call us at (713) 622-6245.';
       banner.classList.add('visible');
       bookBtn.disabled    = false;
       bookBtn.textContent = 'Book Now';
