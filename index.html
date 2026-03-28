@@ -3,26 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Check In ·Cha Nail Spa</title>
+  <title>Cha Nails &amp; Spa · Check In</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400;1,500;1,600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ============================================================
-       CUSTOMIZE THESE COLORS PER CLIENT (match index.html)
-       ============================================================ */
     :root {
-      --brand:   #b76e79;
-      --brand-d: #9a5a64;
-      --bg:      #fdf6f7;
-      --card:    #ffffff;
-      --text:    #2d2d2d;
-      --muted:   #888;
-      --border:  #e8d5d8;
-      --radius:  14px;
-      --shadow:  0 4px 24px rgba(183,110,121,.12);
+      --bg:        #fdf0ec;
+      --text:      #8a5a42;
+      --accent:    #b87a5a;
+      --accent-lt: #c9956a;
+      --floral:    #f2bfb5;
+      --card-bg:   #fff9f7;
+      --border:    #e8c9bc;
+      --white:     #ffffff;
     }
 
     body { font-family: 'Jost', sans-serif; font-weight: 400; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
@@ -43,11 +39,7 @@
 
     .form-group { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1.1rem; }
     label { font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); }
-    input[type="tel"] {
-      border: 0.5px solid var(--border); border-radius: 8px; padding: 0.65rem 0.9rem;
-      font-family: 'Jost', sans-serif; font-size: 0.92rem; font-weight: 300;
-      color: var(--text); background: var(--white); outline: none; width: 100%; transition: border-color 0.2s;
-    }
+    input[type="tel"] { border: 0.5px solid var(--border); border-radius: 8px; padding: 0.65rem 0.9rem; font-family: 'Jost', sans-serif; font-size: 0.92rem; font-weight: 300; color: var(--text); background: var(--white); outline: none; width: 100%; transition: border-color 0.2s; }
     input:focus { border-color: var(--accent); }
     input::placeholder { color: #c9b0a4; }
 
@@ -63,39 +55,54 @@
     .error-banner { display: none; background: #fde8df; border: 0.5px solid #d4917a; border-radius: 8px; padding: 0.65rem 0.9rem; font-size: 0.82rem; color: #7a3a25; margin-bottom: 1.2rem; }
     .error-banner.visible { display: block; }
 
-    /* ─── HOME BUTTONS ─── */
+    /* Home options */
     .home-options { display: flex; flex-direction: column; gap: 1rem; max-width: 520px; margin: 0 auto; }
     .home-btn { background: var(--card-bg); border: 0.5px solid var(--border); border-radius: 16px; padding: 1.8rem 2rem; cursor: pointer; text-align: center; transition: border-color 0.2s, transform 0.1s; text-decoration: none; display: block; }
     .home-btn:hover { border-color: var(--accent); transform: translateY(-2px); }
     .home-btn-title { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.5rem; color: var(--accent); margin-bottom: 0.3rem; }
     .home-btn-sub { font-size: 0.78rem; font-weight: 300; color: var(--accent-lt); letter-spacing: 0.04em; }
 
-    /* ─── APPOINTMENT SUMMARY ─── */
+    /* Pills */
+    .pills-label { font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); margin-bottom: 0.6rem; }
+    .pills { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.1rem; }
+    .pill { padding: 0.42rem 1rem; border-radius: 20px; border: 0.5px solid var(--border); background: var(--white); color: var(--text); font-family: 'Jost', sans-serif; font-size: 0.82rem; cursor: pointer; user-select: none; transition: background 0.15s, color 0.15s, border-color 0.15s; }
+    .pill:hover { border-color: var(--accent-lt); }
+    .pill.selected { background: var(--accent); color: #fff9f7; border-color: var(--accent); }
+    .pill-duration { font-size: 0.72rem; font-weight: 300; opacity: 0.8; }
+
+    /* Dropdown */
+    .custom-dropdown { position: relative; margin-bottom: 1.1rem; }
+    .dropdown-trigger { display: flex; align-items: center; justify-content: space-between; border: 0.5px solid var(--border); border-radius: 8px; padding: 0.65rem 0.9rem; background: var(--white); cursor: pointer; font-family: 'Jost', sans-serif; font-size: 0.92rem; font-weight: 300; color: var(--text); user-select: none; transition: border-color 0.2s; }
+    .dropdown-trigger.open { border-color: var(--accent); }
+    .dropdown-trigger .placeholder { color: #c9b0a4; }
+    .dropdown-caret { font-size: 0.65rem; color: var(--accent-lt); transition: transform 0.2s; margin-left: 0.5rem; flex-shrink: 0; }
+    .dropdown-trigger.open .dropdown-caret { transform: rotate(180deg); }
+    .dropdown-list { display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--white); border: 0.5px solid var(--border); border-radius: 8px; z-index: 50; max-height: 220px; overflow-y: auto; box-shadow: 0 4px 16px rgba(138,90,66,0.08); }
+    .dropdown-list.open { display: block; }
+    .dropdown-option { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.9rem; cursor: pointer; font-size: 0.88rem; font-weight: 300; color: var(--text); transition: background 0.12s; }
+    .dropdown-option:hover { background: var(--bg); }
+    .dropdown-option.selected-opt { color: var(--accent); font-weight: 400; }
+    .opt-check { width: 14px; height: 14px; border: 0.5px solid var(--border); border-radius: 3px; background: var(--white); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: background 0.15s, border-color 0.15s; }
+    .dropdown-option.selected-opt .opt-check { background: var(--accent); border-color: var(--accent); }
+    .opt-check::after { content: ''; display: none; width: 5px; height: 3px; border-left: 1.5px solid #fff9f7; border-bottom: 1.5px solid #fff9f7; transform: rotate(-45deg) translateY(-1px); }
+    .dropdown-option.selected-opt .opt-check::after { display: block; }
+    .form-group .custom-dropdown { margin-bottom: 0; }
+
+    /* Appt summary */
     .appt-summary { background: #fde8df; border: 0.5px solid var(--border); border-radius: 12px; padding: 1.2rem 1.4rem; margin-bottom: 1.2rem; font-size: 0.82rem; font-weight: 300; color: var(--text); line-height: 2; }
     .appt-summary strong { font-weight: 500; color: var(--accent); }
 
-    /* ─── POINTS BADGE ─── */
+    /* Points badge */
     .points-badge { background: var(--white); border: 0.5px solid var(--border); border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 1.2rem; font-size: 0.82rem; font-weight: 300; color: var(--text); line-height: 1.8; }
     .points-badge strong { font-weight: 500; color: var(--accent); }
     .points-badge .earned { font-size: 1rem; font-weight: 500; color: var(--accent); }
     .rewards-progress { height: 4px; background: var(--border); border-radius: 2px; margin-top: 0.6rem; overflow: hidden; }
     .rewards-progress-fill { height: 100%; background: var(--accent); border-radius: 2px; }
 
-    /* ─── REDEMPTION OPTIONS ─── */
+    /* Redemption */
     .redemption-section { margin-bottom: 1.2rem; }
     .redemption-title { font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); margin-bottom: 0.8rem; }
-    .redemption-option {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border: 0.5px solid var(--border);
-      border-radius: 10px;
-      padding: 0.9rem 1rem;
-      margin-bottom: 0.6rem;
-      cursor: pointer;
-      transition: border-color 0.15s, background 0.15s;
-      background: var(--white);
-    }
+    .redemption-option { display: flex; align-items: center; justify-content: space-between; border: 0.5px solid var(--border); border-radius: 10px; padding: 0.9rem 1rem; margin-bottom: 0.6rem; cursor: pointer; transition: border-color 0.15s, background 0.15s; background: var(--white); }
     .redemption-option:hover { border-color: var(--accent-lt); }
     .redemption-option.selected { border-color: var(--accent); background: #fde8df; }
     .redemption-option.locked { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
@@ -107,20 +114,25 @@
     .redemption-option.selected .redemption-check { background: var(--accent); border-color: var(--accent); }
     .redemption-check::after { content: ''; display: none; width: 5px; height: 3px; border-left: 1.5px solid #fff9f7; border-bottom: 1.5px solid #fff9f7; transform: rotate(-45deg) translateY(-1px); }
     .redemption-option.selected .redemption-check::after { display: block; }
-
     .redemption-notice { font-size: 0.75rem; font-weight: 300; color: var(--accent-lt); font-style: italic; margin-top: 0.4rem; }
 
-    /* ─── CONFIRMATION ─── */
+    /* Wait time */
+    .wait-banner { background: #fde8df; border: 0.5px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.2rem; font-size: 0.82rem; font-weight: 300; color: var(--text); line-height: 1.7; }
+    .wait-banner strong { font-weight: 500; color: var(--accent); }
+
+    /* Confirm */
     .confirm-star { font-size: 1rem; color: var(--floral); letter-spacing: 0.4em; margin-bottom: 0.8rem; display: block; }
     .confirm-title { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 2rem; color: var(--accent); margin-bottom: 1rem; }
     .confirm-body { font-size: 0.88rem; font-weight: 300; line-height: 2; color: var(--text); }
     .confirm-body strong { font-weight: 500; color: var(--accent); }
 
-    /* ─── STEPS ─── */
-    #step-home    { display: block; }
-    #step-checkin { display: none; }
-    #step-redeem  { display: none; }
-    #step-confirm { display: none; }
+    /* Steps */
+    #step-home      { display: block; }
+    #step-phone     { display: none; }
+    #step-type      { display: none; }
+    #step-walkin    { display: none; }
+    #step-redeem    { display: none; }
+    #step-confirm   { display: none; }
 
     footer { text-align: center; padding: 1.2rem; font-size: 0.76rem; font-weight: 300; color: var(--accent); letter-spacing: 0.04em; border-top: 0.5px solid var(--border); }
 
@@ -134,77 +146,120 @@
 <body>
 
 <header>
-  <img src="logo.jpg" alt="Salon Logo" class="header-logo" onerror="this.style.display='none'" />
-  <div class="header-brand-name"><!-- SALON NAME --></div>
+  <img src="logo.jpg" alt="Cha Nails &amp; Spa" class="header-logo" onerror="this.style.display='none'" />
+  <div class="header-brand-name">Cha</div>
   <div class="header-subtitle">Nails &amp; Spa</div>
   <div class="header-sep">✦ &nbsp; ✦ &nbsp; ✦</div>
   <div class="header-info">
-    <!-- STREET ADDRESS --> &nbsp;✦&nbsp; <!-- CITY, STATE ZIP --><br>
-    <a href="tel:+1XXXXXXXXXX">(XXX) XXX-XXXX</a>
+    4210 San Felipe &nbsp;✦&nbsp; Houston, TX 77027<br>
+    <a href="tel:+17136226245">(713) 622-6245</a>
   </div>
 </header>
 
 <main>
 
-  <!-- STEP 1: HOME -->
+  <!-- HOME -->
   <div id="step-home">
     <div class="home-options">
-      <a class="home-btn" onclick="showCheckin()">
+      <a class="home-btn" onclick="showPhone()">
         <div class="home-btn-title">Check In</div>
         <div class="home-btn-sub">I have an appointment today</div>
       </a>
+      <a class="home-btn" onclick="showWalkIn()">
+        <div class="home-btn-title">Walk In</div>
+        <div class="home-btn-sub">I don't have an appointment</div>
+      </a>
       <a class="home-btn" href="booking.html">
         <div class="home-btn-title">Book an Appointment</div>
-        <div class="home-btn-sub">Schedule a new visit</div>
+        <div class="home-btn-sub">Schedule a future visit</div>
       </a>
     </div>
   </div>
 
-  <!-- STEP 2: PHONE LOOKUP -->
-  <div id="step-checkin">
+  <!-- PHONE LOOKUP (check-in) -->
+  <div id="step-phone">
     <div class="card">
       <div class="card-title">Check In</div>
       <div class="card-sub">Enter your phone number to find your appointment</div>
       <div class="error-banner" id="checkin-error"></div>
       <div class="form-group">
         <label for="checkin-phone">Phone Number</label>
-        <input type="tel" id="checkin-phone" placeholder="(XXX) XXX-XXXX" maxlength="14" />
+        <input type="tel" id="checkin-phone" placeholder="(713) 555-0000" maxlength="14" />
       </div>
       <button class="btn btn-primary btn-full" onclick="handleCheckin()">Find My Appointment</button>
-      <div class="btn-row">
-        <button class="btn btn-ghost" onclick="showHome()">Back</button>
-      </div>
+      <div class="btn-row"><button class="btn btn-ghost" onclick="showHome()">Back</button></div>
     </div>
   </div>
 
-  <!-- STEP 3: POINTS + REDEMPTION -->
+  <!-- WALK-IN FORM -->
+  <div id="step-walkin">
+    <div class="card">
+      <div class="card-title">Walk In</div>
+      <div class="card-sub">Select your services and we'll check the wait time</div>
+      <div class="error-banner" id="walkin-error"></div>
+
+      <div class="form-group">
+        <label for="walkin-phone">Phone Number <span style="font-size:0.68rem;font-weight:300;text-transform:none;letter-spacing:0;color:var(--accent-lt);margin-left:0.4rem;">optional — for points</span></label>
+        <input type="tel" id="walkin-phone" placeholder="(713) 555-0000" maxlength="14" />
+      </div>
+
+      <div class="pills-label">Services</div>
+      <div class="pills" id="walkin-pills">
+        <span class="pill" data-service="Pedicure"      data-dur="45min" onclick="toggleWalkInPill(this)">Pedicure <span class="pill-duration">45min</span></span>
+        <span class="pill" data-service="Manicure"      data-dur="30min" onclick="toggleWalkInPill(this)">Manicure <span class="pill-duration">30min</span></span>
+        <span class="pill" data-service="Gel Manicure"  data-dur="30min" onclick="toggleWalkInPill(this)">Gel Manicure <span class="pill-duration">30min</span></span>
+        <span class="pill" data-service="Full Set"      data-dur="45min" onclick="toggleWalkInPill(this)">Full Set <span class="pill-duration">45min</span></span>
+        <span class="pill" data-service="Fill-In"       data-dur="45min" onclick="toggleWalkInPill(this)">Fill-In <span class="pill-duration">45min</span></span>
+        <span class="pill" data-service="Color Dipping" data-dur="45min" onclick="toggleWalkInPill(this)">Color Dipping <span class="pill-duration">45min</span></span>
+        <span class="pill" data-service="Wax"           data-dur="15min" onclick="toggleWalkInPill(this)">Wax <span class="pill-duration">15min</span></span>
+        <span class="pill" data-service="Polish Change" data-dur="15min" onclick="toggleWalkInPill(this)">Polish Change <span class="pill-duration">15min</span></span>
+        <span class="pill" data-service="Repair"        data-dur="15min" onclick="toggleWalkInPill(this)">Repair <span class="pill-duration">15min</span></span>
+        <span class="pill" data-service="Other"         data-dur="15min" onclick="toggleWalkInPill(this)">Other <span class="pill-duration">15min</span></span>
+      </div>
+
+      <div class="form-group">
+        <label>Preferred Technician</label>
+        <div class="custom-dropdown" id="walkin-tech-dd">
+          <div class="dropdown-trigger" onclick="toggleDropdown('walkin-tech-dd')">
+            <span class="placeholder" id="walkin-tech-display">Any Tech</span>
+            <span class="dropdown-caret">▼</span>
+          </div>
+          <div class="dropdown-list" id="walkin-tech-list">
+            <div class="dropdown-option selected-opt" data-value="Any Tech" onclick="selectWalkInTech(this)"><span class="opt-check"></span> Any Tech</div>
+            <div class="dropdown-option" data-value="Bae"     onclick="selectWalkInTech(this)"><span class="opt-check"></span> Bae</div>
+            <div class="dropdown-option" data-value="Hannah"  onclick="selectWalkInTech(this)"><span class="opt-check"></span> Hannah</div>
+            <div class="dropdown-option" data-value="Jessica" onclick="selectWalkInTech(this)"><span class="opt-check"></span> Jessica</div>
+            <div class="dropdown-option" data-value="Kim"     onclick="selectWalkInTech(this)"><span class="opt-check"></span> Kim</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-full" onclick="handleWalkIn()">Check Wait Time</button>
+      <div class="btn-row"><button class="btn btn-ghost" onclick="showHome()">Back</button></div>
+    </div>
+  </div>
+
+  <!-- REDEEM (after appointment check-in) -->
   <div id="step-redeem">
     <div class="card">
       <div class="card-title" id="redeem-title">You're checked in ✦</div>
       <div class="card-sub" id="redeem-sub"></div>
-
-      <!-- Appointment summary -->
       <div class="appt-summary" id="redeem-appt"></div>
-
-      <!-- Points earned today -->
       <div class="points-badge" id="redeem-points"></div>
-
-      <!-- Redemption options (only shown if they have enough points) -->
       <div class="redemption-section" id="redeem-options" style="display:none;">
         <div class="redemption-title">Would you like to use your points today?</div>
         <div id="redemption-list"></div>
         <div class="redemption-notice">Let the front desk know your selection before your service begins.</div>
       </div>
-
       <div class="btn-row">
         <button class="btn btn-primary" onclick="showConfirm()">Done</button>
       </div>
     </div>
   </div>
 
-  <!-- STEP 4: FINAL CONFIRMATION -->
+  <!-- CONFIRM -->
   <div id="step-confirm">
-    <div class="card" style="text-align:center; padding: 3rem 2rem;">
+    <div class="card" style="text-align:center; padding:3rem 2rem;">
       <span class="confirm-star">✦ &nbsp; ✦ &nbsp; ✦</span>
       <div class="confirm-title">Enjoy your visit!</div>
       <div class="confirm-body" id="confirm-body"></div>
@@ -216,99 +271,165 @@
 
 </main>
 
-<footer>© 2026 <!-- SALON NAME --> &nbsp;·&nbsp; <!-- CITY, STATE --></footer>
+<footer>© 2026 Cha Nails &amp; Spa &nbsp;·&nbsp; Houston, TX</footer>
 
 <script>
-  // ============================================================
-  // CUSTOMIZE: Must match index.html
-  // ============================================================
   const SCRIPT_URL        = 'https://script.google.com/macros/s/AKfycbweEpavxdcWNjpg_1hUC2xsq-rSaSDkg5eTykTZiT1QEyZ3_equDZSGfVR6oc8Ob7lQ/exec';
   const FREE_PEDICURE_PTS = 125;
 
-  // ============================================================
-  // CUSTOMIZE: Redemption tiers — add/remove/change as needed
-  // Format: { name, cost, description }
-  // ============================================================
   const REDEMPTION_TIERS = [
-    { name: 'Free Pedicure',         cost: 125, description: 'Full pedicure on us' },
-    { name: '$10 Off Any Service',   cost: 75,  description: 'Applied to your service today' },
-    { name: '$5 Off Any Service',    cost: 40,  description: 'Applied to your service today' },
+    { name: 'Free Pedicure',       cost: 125, description: 'Full pedicure on us' },
+    { name: '$10 Off Any Service', cost: 75,  description: 'Applied to your service today' },
+    { name: '$5 Off Any Service',  cost: 40,  description: 'Applied to your service today' },
   ];
-  // ============================================================
+
+  // Walk-in points (half value)
+  const WALKIN_POINTS = {
+    'Pedicure': 5, 'Manicure': 5, 'Gel Manicure': 8,
+    'Full Set': 5, 'Fill-In': 5, 'Color Dipping': 8,
+    'Wax': 5, 'Polish Change': 5, 'Repair': 3, 'Other': 5,
+  };
 
   let checkinData    = null;
   let selectedReward = null;
+  let walkInTech     = 'Any Tech';
 
   // Phone formatting
-  document.getElementById('checkin-phone').addEventListener('input', function () {
-    let v = this.value.replace(/\D/g, '').slice(0, 10);
-    if (v.length >= 7)      v = '(' + v.slice(0,3) + ') ' + v.slice(3,6) + '-' + v.slice(6);
-    else if (v.length >= 4) v = '(' + v.slice(0,3) + ') ' + v.slice(3);
-    else if (v.length >= 1) v = '(' + v;
-    this.value = v;
+  ['checkin-phone','walkin-phone'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', function () {
+      let v = this.value.replace(/\D/g, '').slice(0, 10);
+      if (v.length >= 7)      v = '(' + v.slice(0,3) + ') ' + v.slice(3,6) + '-' + v.slice(6);
+      else if (v.length >= 4) v = '(' + v.slice(0,3) + ') ' + v.slice(3);
+      else if (v.length >= 1) v = '(' + v;
+      this.value = v;
+    });
   });
 
   function showHome() {
     document.getElementById('checkin-phone').value = '';
-    clearError();
-    checkinData    = null;
-    selectedReward = null;
-    show('step-home'); hide('step-checkin'); hide('step-redeem'); hide('step-confirm');
+    document.getElementById('walkin-phone').value  = '';
+    clearError('checkin-error'); clearError('walkin-error');
+    checkinData = null; selectedReward = null;
+    document.querySelectorAll('#walkin-pills .pill.selected').forEach(p => p.classList.remove('selected'));
+    walkInTech = 'Any Tech';
+    document.getElementById('walkin-tech-display').textContent = 'Any Tech';
+    document.getElementById('walkin-tech-display').classList.add('placeholder');
+    document.querySelectorAll('#walkin-tech-list .dropdown-option').forEach(o => o.classList.remove('selected-opt'));
+    document.querySelector('#walkin-tech-list [data-value="Any Tech"]').classList.add('selected-opt');
+    hideAll(); show('step-home');
   }
 
-  function showCheckin() {
-    hide('step-home'); show('step-checkin'); hide('step-redeem'); hide('step-confirm');
+  function showPhone() { hideAll(); show('step-phone'); }
+  function showWalkIn() { hideAll(); show('step-walkin'); }
+
+  function toggleWalkInPill(el) { el.classList.toggle('selected'); }
+
+  function selectWalkInTech(optEl) {
+    document.querySelectorAll('#walkin-tech-list .dropdown-option').forEach(o => o.classList.remove('selected-opt'));
+    optEl.classList.add('selected-opt');
+    walkInTech = optEl.dataset.value;
+    const display = document.getElementById('walkin-tech-display');
+    display.textContent = walkInTech;
+    display.classList.remove('placeholder');
+    document.getElementById('walkin-tech-list').classList.remove('open');
+    document.getElementById('walkin-tech-dd').querySelector('.dropdown-trigger').classList.remove('open');
   }
 
   async function handleCheckin() {
     const raw = document.getElementById('checkin-phone').value.replace(/\D/g, '');
-    if (!raw) { showError('Please enter your phone number.'); return; }
-
-    const btn = document.querySelector('#step-checkin .btn-primary');
+    if (!raw) { showError('checkin-error', 'Please enter your phone number.'); return; }
+    const btn = document.querySelector('#step-phone .btn-primary');
     btn.disabled = true; btn.textContent = 'Looking up…';
-    clearError();
-
+    clearError('checkin-error');
     try {
       const res  = await fetch(`${SCRIPT_URL}?action=checkin&phone=${encodeURIComponent(raw)}`);
       const data = await res.json();
-
       if (!data.found) {
-        showError("We couldn't find an appointment for you today. Please see the front desk.");
+        showError('checkin-error', "We couldn't find an appointment for you today. Please see the front desk.");
         btn.disabled = false; btn.textContent = 'Find My Appointment';
         return;
       }
-
       if (data.alreadyCheckedIn) {
-        showError(`You're already checked in, ${data.firstName}! Your technician will be right with you.`);
+        showError('checkin-error', `You're already checked in, ${data.firstName}! Your technician will be right with you.`);
         btn.disabled = false; btn.textContent = 'Find My Appointment';
         return;
       }
-
       checkinData = data;
       buildRedeemScreen(data);
-      hide('step-checkin'); show('step-redeem');
-
+      hideAll(); show('step-redeem');
     } catch (err) {
-      showError('Something went wrong — please see the front desk.');
+      showError('checkin-error', 'Something went wrong — please see the front desk.');
     }
-
     btn.disabled = false; btn.textContent = 'Find My Appointment';
   }
 
+  async function handleWalkIn() {
+    const selectedPills = [...document.querySelectorAll('#walkin-pills .pill.selected')];
+    if (selectedPills.length === 0) {
+      showError('walkin-error', 'Please select at least one service.');
+      return;
+    }
+    const services = selectedPills.map(p => `${p.dataset.service} ${p.dataset.dur}`).join(', ');
+    const phone    = document.getElementById('walkin-phone').value.replace(/\D/g, '');
+    const btn      = document.querySelector('#step-walkin .btn-primary');
+    btn.disabled   = true; btn.textContent = 'Checking…';
+    clearError('walkin-error');
+
+    let waitMinutes = 0;
+    let checkedInCount = 0;
+    try {
+      const res  = await fetch(`${SCRIPT_URL}?action=waittime`);
+      const data = await res.json();
+      checkedInCount = data.checkedInCount || 0;
+      waitMinutes    = data.estimatedWaitMinutes || 0;
+    } catch (_) {}
+
+    // Calculate walk-in points
+    let pts = 0;
+    for (const p of selectedPills) {
+      pts += WALKIN_POINTS[p.dataset.service] || 5;
+    }
+
+    // Write walk-in to sheet if phone provided
+    if (phone) {
+      try {
+        const params = new URLSearchParams({
+          action: 'walkin', phone, services, technician: walkInTech,
+        });
+        await fetch(`${SCRIPT_URL}?${params}`);
+      } catch (_) {}
+    }
+
+    // Build confirmation
+    const waitMsg = waitMinutes === 0
+      ? 'No wait — you can be seen right away!'
+      : `Estimated wait: approximately ${waitMinutes} minutes`;
+
+    let body = `Let the front desk know you're here for:<br><strong>${services}</strong><br>`;
+    if (walkInTech !== 'Any Tech') body += `Preferred technician: ${walkInTech}<br>`;
+    body += `<br>${waitMsg}<br><br>`;
+    if (phone) {
+      body += `<strong>+${pts} points</strong> have been added to your account.<br>`;
+      body += `<span style="font-size:0.78rem;color:var(--accent-lt);">Book your next visit in advance to earn double points.</span>`;
+    } else {
+      body += `<span style="font-size:0.78rem;color:var(--accent-lt);">Add your phone number next time to earn reward points!</span>`;
+    }
+
+    document.getElementById('confirm-body').innerHTML = body;
+    hideAll(); show('step-confirm');
+    btn.disabled = false; btn.textContent = 'Check Wait Time';
+  }
+
   function buildRedeemScreen(data) {
-    // Title
     document.getElementById('redeem-title').textContent = `Welcome, ${data.firstName}! ✦`;
     document.getElementById('redeem-sub').textContent   = data.services;
-
-    // Appointment summary
     document.getElementById('redeem-appt').innerHTML =
       `<strong>${data.services}</strong><br>With: ${data.technician} &nbsp;·&nbsp; ${data.time}`;
 
-    // Points badge
-    const pct        = Math.min(100, Math.round((data.totalPoints / FREE_PEDICURE_PTS) * 100));
-    let pointsHtml   = `<span class="earned">+${data.pointsEarned} points earned today!</span><br>`;
-    pointsHtml      += `You now have <strong>${data.totalPoints} points</strong>.<br>`;
-
+    const pct = Math.min(100, Math.round((data.totalPoints / FREE_PEDICURE_PTS) * 100));
+    let pointsHtml = `<span class="earned">+${data.pointsEarned} points earned today!</span><br>`;
+    pointsHtml    += `You now have <strong>${data.totalPoints} points</strong>.<br>`;
     if (data.freeReward) {
       pointsHtml += `🎉 <strong>You've earned a free pedicure!</strong>`;
     } else {
@@ -317,64 +438,37 @@
     }
     document.getElementById('redeem-points').innerHTML = pointsHtml;
 
-    // Redemption options
     const eligible = REDEMPTION_TIERS.filter(t => data.totalPoints >= t.cost);
     const locked   = REDEMPTION_TIERS.filter(t => data.totalPoints < t.cost);
 
     if (eligible.length > 0) {
       const list = document.getElementById('redemption-list');
       list.innerHTML = '';
-
-      // Eligible options
       eligible.forEach(function(tier) {
         const opt = document.createElement('div');
         opt.className = 'redemption-option';
-        opt.innerHTML = `
-          <div class="redemption-left">
-            <div class="redemption-name">${tier.name}</div>
-            <div class="redemption-cost">${tier.cost} points · ${tier.description}</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:0.6rem;">
-            <div class="redemption-check"></div>
-          </div>`;
+        opt.innerHTML = `<div class="redemption-left"><div class="redemption-name">${tier.name}</div><div class="redemption-cost">${tier.cost} points · ${tier.description}</div></div><div class="redemption-check"></div>`;
         opt.addEventListener('click', function() {
           document.querySelectorAll('.redemption-option').forEach(o => o.classList.remove('selected'));
-          opt.classList.add('selected');
-          selectedReward = tier;
+          opt.classList.add('selected'); selectedReward = tier;
         });
         list.appendChild(opt);
       });
-
-      // Locked options (not enough points)
       locked.forEach(function(tier) {
         const needed = tier.cost - data.totalPoints;
-        const opt    = document.createElement('div');
+        const opt = document.createElement('div');
         opt.className = 'redemption-option locked';
-        opt.innerHTML = `
-          <div class="redemption-left">
-            <div class="redemption-name">${tier.name}</div>
-            <div class="redemption-cost">${tier.cost} points · ${tier.description}</div>
-          </div>
-          <div class="redemption-right">${needed} more pts needed</div>`;
+        opt.innerHTML = `<div class="redemption-left"><div class="redemption-name">${tier.name}</div><div class="redemption-cost">${tier.cost} points · ${tier.description}</div></div><div class="redemption-right">${needed} more pts needed</div>`;
         list.appendChild(opt);
       });
-
-      // "No thanks" option
       const noThanks = document.createElement('div');
       noThanks.className = 'redemption-option';
-      noThanks.innerHTML = `
-        <div class="redemption-left">
-          <div class="redemption-name">No thanks, save my points</div>
-          <div class="redemption-cost">Keep points for a future visit</div>
-        </div>
-        <div class="redemption-check"></div>`;
+      noThanks.innerHTML = `<div class="redemption-left"><div class="redemption-name">No thanks, save my points</div><div class="redemption-cost">Keep points for a future visit</div></div><div class="redemption-check"></div>`;
       noThanks.addEventListener('click', function() {
         document.querySelectorAll('.redemption-option').forEach(o => o.classList.remove('selected'));
-        noThanks.classList.add('selected');
-        selectedReward = null;
+        noThanks.classList.add('selected'); selectedReward = null;
       });
       list.appendChild(noThanks);
-
       document.getElementById('redeem-options').style.display = 'block';
     } else {
       document.getElementById('redeem-options').style.display = 'none';
@@ -383,30 +477,43 @@
 
   function showConfirm() {
     let body = '';
-
     if (selectedReward) {
-      body = `<strong>Please let the front desk know:</strong><br>
-        You'd like to redeem <strong>${selectedReward.name}</strong> (${selectedReward.cost} points).<br><br>
-        <span style="font-size:0.78rem;color:var(--accent-lt);">Your technician will apply this to your service today.</span>`;
+      body = `<strong>Please let the front desk know:</strong><br>You'd like to redeem <strong>${selectedReward.name}</strong> (${selectedReward.cost} points).<br><br><span style="font-size:0.78rem;color:var(--accent-lt);">Your technician will apply this to your service today.</span>`;
     } else {
-      body = `Your points are saved for a future visit.<br><br>
-        <span style="font-size:0.78rem;color:var(--accent-lt);">Your technician will be right with you — enjoy your visit!</span>`;
+      body = `Your points are saved for a future visit.<br><br><span style="font-size:0.78rem;color:var(--accent-lt);">Your technician will be right with you — enjoy your visit!</span>`;
     }
-
     document.getElementById('confirm-body').innerHTML = body;
-    hide('step-redeem'); show('step-confirm');
+    hideAll(); show('step-confirm');
   }
 
-  function showError(msg) {
-    const b = document.getElementById('checkin-error');
-    b.textContent = msg; b.classList.add('visible');
+  function toggleDropdown(id) {
+    const dd      = document.getElementById(id);
+    const trigger = dd.querySelector('.dropdown-trigger');
+    const list    = dd.querySelector('.dropdown-list');
+    const isOpen  = list.classList.contains('open');
+    document.querySelectorAll('.dropdown-list.open').forEach(l => {
+      l.classList.remove('open');
+      l.closest('.custom-dropdown').querySelector('.dropdown-trigger').classList.remove('open');
+    });
+    if (!isOpen) { list.classList.add('open'); trigger.classList.add('open'); }
   }
-  function clearError() {
-    const b = document.getElementById('checkin-error');
-    b.textContent = ''; b.classList.remove('visible');
-  }
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.custom-dropdown')) {
+      document.querySelectorAll('.dropdown-list.open').forEach(l => {
+        l.classList.remove('open');
+        l.closest('.custom-dropdown').querySelector('.dropdown-trigger').classList.remove('open');
+      });
+    }
+  });
+
+  function showError(id, msg) { const b = document.getElementById(id); b.textContent = msg; b.classList.add('visible'); }
+  function clearError(id) { const b = document.getElementById(id); if(b) { b.textContent = ''; b.classList.remove('visible'); } }
   function show(id) { document.getElementById(id).style.display = 'block'; }
   function hide(id) { document.getElementById(id).style.display = 'none'; }
+  function hideAll() {
+    ['step-home','step-phone','step-walkin','step-redeem','step-confirm'].forEach(hide);
+  }
 </script>
 </body>
 </html>
