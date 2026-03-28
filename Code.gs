@@ -1,8 +1,8 @@
 // ── Cha Nails & Spa — Google Apps Script Backend ──
 //
 // Sheet column layout (row 1 = header):
-//   A (0) Phone | B (1) First | C (2) Last | D (3) Date | E (4) Time
-//   F (5) Technician | G (6) Services | H (7) Submitted At
+//   A (0) Phone | B (1) First | C (2) Last | D (3) Date | E (4) Technician
+//   F (5) Time | G (6) Services | H (7) Submitted At
 //
 // Deploy: Extensions → Apps Script → Deploy → Manage deployments → new version
 //   Execute as: Me | Who has access: Anyone
@@ -92,10 +92,10 @@ function getUnavailableSlots(technician, date, rows) {
 
   for (const row of rows) {
     if (String(row[3]) !== date) continue;
-    const rowTech = String(row[5]);
+    const rowTech = String(row[4]);
     if (!isAny && rowTech !== 'Any Tech' && rowTech !== technician) continue;
 
-    const rowTime     = String(row[4]);
+    const rowTime     = String(row[5]);
     const rowServices = String(row[6]);
     const blocked     = getBlockedSlots(rowTime, rowServices);
     blocked.forEach(s => unavailable.add(s));
