@@ -964,10 +964,25 @@
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
         if (!data.success) {
+          if (data.partialConflict) {
+            // Some techs in this selection are booked, others are free.
+            const booked = data.bookedTechs.join(' and ');
+            const free   = data.freeTechs.join(' and ');
+            let msg = `${booked} ${data.bookedTechs.length === 1 ? 'is' : 'are'} unavailable at ${appt.time}.`;
+            msg += ` ${free} can see you at that time.`;
+            if (data.nextAvailable) {
+              msg += ` Please choose another technician or update your time to ${data.nextAvailable}.`;
+            } else {
+              msg += ` Please choose another technician or a different time.`;
+            }
+            banner.textContent = msg;
+            banner.classList.add('visible');
+            bookBtn.disabled    = false;
+            bookBtn.textContent = 'Book Now';
+            return;
+          }
           if (data.conflict) {
-            // Build a specific message naming the unavailable tech,
-            // any other techs in this booking that are still available,
-            // and the next open time slot.
+            // All selected techs are booked — look at other appointments in this booking.
             const otherTechs = appointments
               .filter((_, j) => j !== ai)
               .map(a => a.technician)

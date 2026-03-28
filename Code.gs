@@ -41,16 +41,27 @@ function lookupPhone(phone) {
   return json({ found: false });
 }
 
-// GET ?action=availability&technician=Bae&date=2026-04-01
-// Returns { unavailableSlots: [...] } — all slots blocked by existing bookings,
-// including duration + 15-min grace period for each booking.
+// GET ?action=availability&technician=Hannah%2C%20Jessica&date=2026-04-01
+// Returns { unavailableSlots: [...] } — slots blocked for this tech selection.
+// When multiple techs are selected, a slot is only blocked if ALL of them
+// are unavailable (so the dropdown still shows times when at least one is free).
 function checkAvailability(technician, date) {
   if (!technician || !date) return json({ unavailableSlots: [] });
 
-  const rows        = getRows();
-  const unavailable = getUnavailableSlots(technician, date, rows);
+  const rows  = getRows();
+  const techs = technician.split(',').map(function(t) { return t.trim(); });
 
-  return json({ unavailableSlots: [...unavailable] });
+  if (techs.length === 1) {
+    const unavailable = getUnavailableSlots(techs[0], date, rows);
+    return json({ unavailableSlots: [...unavailable] });
+  }
+
+  // Multi-tech: only block a slot when ALL selected techs are unavailable.
+  const setsPerTech = techs.map(function(t) { return getUnavailableSlots(t, date, rows); });
+  const unavailable = allTimeSlots().filter(function(slot) {
+    return setsPerTech.every(function(s) { return s.has(slot); });
+  });
+  return json({ unavailableSlots: unavailable });
 }
 
 // GET ?action=book&phone=&firstName=&lastName=&date=&technician=&time=&services=
@@ -64,10 +75,32 @@ function bookAppointment(params) {
   const time       = params.time       || '';
   const services   = params.services   || '';
 
-  const rows        = getRows();
-  const unavailable = getUnavailableSlots(technician, date, rows);
+  const rows  = getRows();
+  const techs = technician.split(',').map(function(t) { return t.trim(); });
 
-  if (unavailable.has(time)) {
+  // Determine which of the selected techs are booked at this time.
+  const bookedTechs = techs.filter(function(t) {
+    return getUnavailableSlots(t, date, rows).has(time);
+  });
+  const freeTechs = techs.filter(function(t) { return bookedTechs.indexOf(t) === -1; });
+
+  if (bookedTechs.length > 0 && freeTechs.length > 0) {
+    // Some techs booked, some free → partial conflict.
+    const next = findNextAvailable(bookedTechs[0], date, time, rows);
+    const bookedStr = bookedTechs.join(' and ');
+    const freeStr   = freeTechs.join(' and ');
+    return json({
+      success:         false,
+      partialConflict: true,
+      bookedTechs:     bookedTechs,
+      freeTechs:       freeTechs,
+      nextAvailable:   next,
+      error:           bookedStr + ' is not available at ' + time + '. ' + freeStr + ' can see you at that time.',
+    });
+  }
+
+  if (bookedTechs.length === techs.length) {
+    // All selected techs are booked → full conflict.
     const next = findNextAvailable(technician, date, time, rows);
     return json({
       success:       false,
