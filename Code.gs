@@ -134,21 +134,13 @@ function getUnavailableSlots(technician, date, rows) {
   const unavailable = new Set();
 
   for (const row of rows) {
-    const rawDate = row[3];
-    const rowDate = rawDate instanceof Date
-      ? Utilities.formatDate(rawDate, Session.getScriptTimeZone(), 'yyyy-MM-dd')
-      : String(rawDate);
-    if (rowDate !== date) continue;
-    const rowTechs = String(row[4]).split(',').map(t => t.trim());
+    // getRows() uses getDisplayValues() — these are always plain strings.
+    if (row[3] !== date) continue;
+    const rowTechs = row[4].split(',').map(function(t) { return t.trim(); });
     if (!isAny && !rowTechs.includes('Any Tech') && !rowTechs.includes(technician)) continue;
 
-    const rawTime = row[5];
-    const rowTime = rawTime instanceof Date
-      ? Utilities.formatDate(rawTime, Session.getScriptTimeZone(), 'h:mm a').replace('am','AM').replace('pm','PM')
-      : String(rawTime);
-    const rowServices = String(row[6]);
-    const blocked     = getBlockedSlots(rowTime, rowServices);
-    blocked.forEach(s => unavailable.add(s));
+    const blocked = getBlockedSlots(row[5], row[6]);
+    blocked.forEach(function(s) { unavailable.add(s); });
   }
 
   return unavailable;
@@ -211,16 +203,7 @@ function allTimeSlots() {
 }
 
 function timeToMinutes(timeVal) {
-  // Google Sheets returns time cells as Date objects or fractional numbers
-  // (fraction of 24h: 0.375 = 9:00 AM). Handle all three cases.
-  if (timeVal instanceof Date) {
-    return timeVal.getHours() * 60 + timeVal.getMinutes();
-  }
-  const num = Number(timeVal);
-  if (!isNaN(num) && num >= 0 && num < 1) {
-    return Math.round(num * 24 * 60);
-  }
-  // Plain string "9:00 AM" / "1:30 PM"
+  // getRows() uses getDisplayValues(), so timeVal is always a string like "9:00 AM".
   try {
     const parts = String(timeVal).split(' ');
     const ampm  = parts[1];
@@ -242,8 +225,15 @@ function getSheet() {
 
 function getRows() {
   const sheet = getSheet();
-  const vals  = sheet.getDataRange().getValues();
-  return vals.slice(1).filter(r => r[0] !== '' && String(r[0]).toLowerCase() !== 'phone');
+  const range = sheet.getDataRange();
+  if (range.getLastRow() < 2) return [];
+  // Use getDisplayValues() so date/time cells come back as the strings
+  // shown in the sheet ("2026-03-30", "9:00 AM") rather than Date objects,
+  // eliminating timezone-shift bugs entirely.
+  const rows = range.getDisplayValues();
+  return rows.slice(1).filter(function(r) {
+    return r[0] !== '' && r[0].toLowerCase() !== 'phone';
+  });
 }
 
 function ensureHeader(sheet) {
