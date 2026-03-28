@@ -91,11 +91,18 @@ function getUnavailableSlots(technician, date, rows) {
   const unavailable = new Set();
 
   for (const row of rows) {
-    if (String(row[3]) !== date) continue;
+    const rawDate = row[3];
+    const rowDate = rawDate instanceof Date
+      ? Utilities.formatDate(rawDate, Session.getScriptTimeZone(), 'yyyy-MM-dd')
+      : String(rawDate);
+    if (rowDate !== date) continue;
     const rowTechs = String(row[4]).split(',').map(t => t.trim());
     if (!isAny && !rowTechs.includes('Any Tech') && !rowTechs.includes(technician)) continue;
 
-    const rowTime     = String(row[5]);
+    const rawTime = row[5];
+    const rowTime = rawTime instanceof Date
+      ? Utilities.formatDate(rawTime, Session.getScriptTimeZone(), 'h:mm a').replace('am','AM').replace('pm','PM')
+      : String(rawTime);
     const rowServices = String(row[6]);
     const blocked     = getBlockedSlots(rowTime, rowServices);
     blocked.forEach(s => unavailable.add(s));
