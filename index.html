@@ -76,7 +76,7 @@
       letter-spacing: .5px;
       margin-bottom: 6px;
     }
-    input {
+    input, select {
       width: 100%;
       padding: 12px 14px;
       border: 1.5px solid var(--border);
@@ -87,7 +87,34 @@
       transition: border-color .2s;
       margin-bottom: 18px;
     }
-    input:focus { outline: none; border-color: var(--brand); }
+    input:focus, select:focus { outline: none; border-color: var(--brand); }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    /* ── service checkboxes ── */
+    .services-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .svc-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: .88rem;
+      transition: border-color .2s, background .2s;
+    }
+    .svc-item:hover { border-color: var(--brand); background: #fdf0f2; }
+    .svc-item input[type=checkbox] {
+      width: 16px; height: 16px;
+      margin: 0; padding: 0; margin-bottom: 0;
+      accent-color: var(--brand);
+    }
+    .svc-item.checked { border-color: var(--brand); background: #fdf0f2; }
 
     /* ── buttons ── */
     .btn {
@@ -142,7 +169,6 @@
     #msg.info    { background: #eaf4fb; color: #1a5276; border: 1px solid #aed6f1; }
 
     /* ── result card ── */
-    #result-section { display: none; }
     .result-box {
       background: #eafaf1;
       border: 1.5px solid #a9dfbf;
@@ -201,6 +227,8 @@
 
     @media (max-width: 480px) {
       .card { padding: 22px 16px; }
+      .row2 { grid-template-columns: 1fr; gap: 0; }
+      .services-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -221,7 +249,7 @@
 
     <div id="msg"></div>
 
-    <!-- check-in section -->
+    <!-- ── Step 1: phone entry ── -->
     <div id="checkin-section">
       <label for="checkin-phone">Your Phone Number</label>
       <input type="tel" id="checkin-phone" placeholder="(713) 555-0000" maxlength="14" />
@@ -231,20 +259,60 @@
       </button>
     </div>
 
-    <!-- result section -->
-    <div id="result-section">
+    <!-- ── Step 2: walk-in form (shown when no appointment found) ── -->
+    <div id="walkin-section" style="display:none">
+      <p style="font-size:.9rem;color:var(--muted);margin-bottom:18px">
+        No appointment found for today. Fill in your info below to check in as a walk-in and earn points.
+      </p>
+
+      <div class="row2">
+        <div>
+          <label for="wi-fn">First Name</label>
+          <input type="text" id="wi-fn" placeholder="First" />
+        </div>
+        <div>
+          <label for="wi-ln">Last Name</label>
+          <input type="text" id="wi-ln" placeholder="Last" />
+        </div>
+      </div>
+
+      <label for="wi-email">Email (optional)</label>
+      <input type="email" id="wi-email" placeholder="you@example.com" />
+
+      <label for="wi-tech">Technician</label>
+      <select id="wi-tech">
+        <option>Any Tech</option>
+        <option>Bae</option>
+        <option>Hannah</option>
+        <option>Jessica</option>
+        <option>Kim</option>
+      </select>
+
+      <label>Services</label>
+      <div class="services-grid" id="wi-svc-grid">
+        <!-- injected by JS -->
+      </div>
+
+      <button class="btn btn-primary" id="btn-walkin" onclick="doWalkIn()">
+        Complete Walk-In Check-In
+      </button>
+      <button class="btn btn-outline" onclick="backToPhone()">Back</button>
+    </div>
+
+    <!-- ── Step 3: success ── -->
+    <div id="result-section" style="display:none">
       <div class="result-box">
-        <h2>Checked In! &#10003;</h2>
-        <p>Thanks for visiting Cha Nails &amp; Spa.</p>
+        <h2 id="result-heading">Checked In! &#10003;</h2>
+        <p id="result-subtitle">Thanks for visiting Cha Nails &amp; Spa.</p>
         <div class="result-detail" id="result-detail"></div>
         <p style="font-size:.82rem;color:var(--muted)">Rewards points have been added to your account.</p>
       </div>
-      <button class="btn btn-outline" onclick="resetCheckin()" style="margin-top:18px">Done</button>
+      <button class="btn btn-outline" onclick="resetAll()" style="margin-top:18px">Done</button>
     </div>
 
-    <div class="divider">or</div>
+    <div id="book-divider" class="divider">or</div>
 
-    <a href="booking.html" class="btn btn-outline" style="text-align:center;text-decoration:none;display:block">
+    <a href="booking.html" id="book-link" class="btn btn-outline" style="text-align:center;text-decoration:none;display:block">
       Book an Appointment
     </a>
   </div><!-- /.card -->
@@ -254,6 +322,30 @@
 
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbweEpavxdcWNjpg_1hUC2xsq-rSaSDkg5eTykTZiT1QEyZ3_equDZSGfVR6oc8Ob7lQ/exec';
+
+const SERVICES = [
+  'Manicure','Pedicure','Gel Manicure','Gel Pedicure',
+  'Acrylic Full Set','Acrylic Fill','Nail Art','Waxing'
+];
+
+// build service checkboxes
+(function() {
+  const grid = document.getElementById('wi-svc-grid');
+  SERVICES.forEach(function(name) {
+    const lbl = document.createElement('label');
+    lbl.className = 'svc-item';
+    lbl.innerHTML =
+      '<input type="checkbox" value="' + name + '" onchange="toggleSvc(this)" />' + name;
+    grid.appendChild(lbl);
+  });
+})();
+
+function toggleSvc(cb) {
+  cb.closest('label').classList.toggle('checked', cb.checked);
+}
+
+// phone formatting
+let walkinPhone = '';
 
 function formatPhone(val) {
   const d = val.replace(/\D/g,'');
@@ -265,10 +357,11 @@ function formatPhone(val) {
 document.getElementById('checkin-phone').addEventListener('input', function() {
   this.value = formatPhone(this.value);
 });
-
 document.getElementById('checkin-phone').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') doCheckIn();
 });
+
+// ── Check-in (existing appointment) ──────────────────────────────────────────
 
 async function doCheckIn() {
   const phone = document.getElementById('checkin-phone').value.trim();
@@ -280,53 +373,147 @@ async function doCheckIn() {
   hideMsg();
 
   try {
-    const res = await fetch(SCRIPT_URL + '?action=checkin&phone=' + encodeURIComponent(phone));
+    const res  = await fetch(SCRIPT_URL + '?action=checkin&phone=' + encodeURIComponent(phone));
     const data = await res.json();
 
-    if (!data.success) {
-      showMsg(data.error || 'No appointment found for today. Please check your phone number.', 'error');
-      btn.disabled = false;
-      btn.textContent = 'Check In';
+    btn.disabled = false;
+    btn.textContent = 'Check In';
+
+    if (data.found === false) {
+      // no appointment → show walk-in form
+      walkinPhone = phone;
+      showSection('walkin');
       return;
     }
 
-    let html = '';
-    if (data.firstName) html += '<strong>' + escHtml(data.firstName + (data.lastName ? ' ' + data.lastName : '')) + '</strong><br>';
-    if (data.date)       html += 'Date: '        + escHtml(data.date)       + '<br>';
-    if (data.time)       html += 'Time: '        + escHtml(data.time)       + '<br>';
-    if (data.technician) html += 'Technician: '  + escHtml(data.technician) + '<br>';
-    if (data.services)   html += 'Services: '    + escHtml(data.services)   + '<br>';
-    if (data.pointsEarned) {
-      html += '<br><span class="points-badge">+' + data.pointsEarned + ' pts earned</span>';
-    }
-    if (data.totalPoints !== undefined) {
-      html += '<div class="points-total">Total points: ' + data.totalPoints + '</div>';
+    if (data.alreadyCheckedIn) {
+      showMsg('You\u2019re already checked in today, ' + escHtml(data.firstName || '') + '!', 'info');
+      return;
     }
 
-    document.getElementById('result-detail').innerHTML = html;
-    document.getElementById('checkin-section').style.display = 'none';
-    document.getElementById('result-section').style.display = 'block';
+    if (!data.success) {
+      showMsg(data.error || 'Something went wrong. Please try again.', 'error');
+      return;
+    }
+
+    showResult(data, false);
 
   } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Check In';
     showMsg('Network error. Please try again.', 'error');
   }
-
-  btn.disabled = false;
-  btn.textContent = 'Check In';
 }
 
-function resetCheckin() {
-  document.getElementById('checkin-phone').value = '';
-  document.getElementById('result-detail').innerHTML = '';
-  document.getElementById('checkin-section').style.display = 'block';
-  document.getElementById('result-section').style.display = 'none';
+// ── Walk-in ───────────────────────────────────────────────────────────────────
+
+async function doWalkIn() {
+  const firstName = document.getElementById('wi-fn').value.trim();
+  const lastName  = document.getElementById('wi-ln').value.trim();
+  const email     = document.getElementById('wi-email').value.trim();
+  const tech      = document.getElementById('wi-tech').value;
+  const checked   = Array.from(document.querySelectorAll('#wi-svc-grid input:checked')).map(function(c) { return c.value; });
+
+  if (!firstName) { showMsg('Please enter your first name.', 'error'); return; }
+  if (checked.length === 0) { showMsg('Please select at least one service.', 'error'); return; }
+
+  const btn = document.getElementById('btn-walkin');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Saving\u2026';
   hideMsg();
+
+  const params = new URLSearchParams({
+    action:     'walkin',
+    phone:      walkinPhone,
+    firstName:  firstName,
+    lastName:   lastName,
+    email:      email,
+    technician: tech,
+    services:   checked.join(','),
+  });
+
+  try {
+    const res  = await fetch(SCRIPT_URL + '?' + params.toString());
+    const data = await res.json();
+
+    btn.disabled = false;
+    btn.textContent = 'Complete Walk-In Check-In';
+
+    if (!data.success) {
+      showMsg(data.error || 'Something went wrong. Please try again.', 'error');
+      return;
+    }
+
+    showResult(data, true);
+
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Complete Walk-In Check-In';
+    showMsg('Network error. Please try again.', 'error');
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function showResult(data, isWalkIn) {
+  let html = '';
+  const name = (data.firstName || '') + (data.lastName ? ' ' + data.lastName : '');
+  if (name.trim()) html += '<strong>' + escHtml(name.trim()) + '</strong><br>';
+  if (data.date)        html += 'Date: '       + escHtml(data.date)       + '<br>';
+  if (data.time)        html += 'Time: '       + escHtml(data.time)       + '<br>';
+  if (data.technician)  html += 'Technician: ' + escHtml(data.technician) + '<br>';
+  if (data.services)    html += 'Services: '   + escHtml(data.services)   + '<br>';
+  if (data.pointsEarned) {
+    html += '<br><span class="points-badge">+' + data.pointsEarned + ' pts earned</span>';
+  }
+  if (data.totalPoints !== undefined) {
+    html += '<div class="points-total">Total points: ' + data.totalPoints + '</div>';
+  }
+
+  document.getElementById('result-detail').innerHTML = html;
+  if (isWalkIn) {
+    document.getElementById('result-heading').textContent  = 'Walk-In Recorded! \u2713';
+    document.getElementById('result-subtitle').textContent = 'Welcome to Cha Nails & Spa!';
+  } else {
+    document.getElementById('result-heading').textContent  = 'Checked In! \u2713';
+    document.getElementById('result-subtitle').textContent = 'Thanks for visiting Cha Nails & Spa.';
+  }
+  showSection('result');
+}
+
+function showSection(name) {
+  document.getElementById('checkin-section').style.display = name === 'checkin' ? '' : 'none';
+  document.getElementById('walkin-section').style.display  = name === 'walkin'  ? '' : 'none';
+  document.getElementById('result-section').style.display  = name === 'result'  ? '' : 'none';
+  // hide "or / Book" link when showing walk-in or result
+  const hide = name !== 'checkin';
+  document.getElementById('book-divider').style.display = hide ? 'none' : '';
+  document.getElementById('book-link').style.display    = hide ? 'none' : '';
+  hideMsg();
+}
+
+function backToPhone() {
+  showSection('checkin');
+}
+
+function resetAll() {
+  document.getElementById('checkin-phone').value = '';
+  document.getElementById('wi-fn').value         = '';
+  document.getElementById('wi-ln').value         = '';
+  document.getElementById('wi-email').value      = '';
+  document.getElementById('wi-tech').value       = 'Any Tech';
+  document.querySelectorAll('#wi-svc-grid input').forEach(function(c) {
+    c.checked = false;
+    c.closest('label').classList.remove('checked');
+  });
+  walkinPhone = '';
+  showSection('checkin');
 }
 
 function showMsg(text, type) {
   const el = document.getElementById('msg');
   el.textContent = text;
-  el.className = type;
+  el.className   = type;
   el.style.display = 'block';
 }
 function hideMsg() {

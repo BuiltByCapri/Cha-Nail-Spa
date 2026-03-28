@@ -54,6 +54,7 @@ function doGet(e) {
   if (action === 'availability') return checkAvailability(e.parameter.technician, e.parameter.date, e.parameter.services, e.parameter.multiTech);
   if (action === 'book')         return bookAppointment(e.parameter);
   if (action === 'checkin')      return checkInCustomer(e.parameter.phone);
+  if (action === 'walkin')       return recordWalkIn(e.parameter);
   if (action === 'debug')        return debugInfo(e.parameter.technician, e.parameter.date);
   return json({ error: 'Unknown action' });
 }
@@ -237,6 +238,49 @@ function checkInCustomer(phone) {
   }
 
   return json({ found: false });
+}
+
+// ── Walk-in ───────────────────────────────────────────────────────────────────
+
+function recordWalkIn(params) {
+  const phone      = String(params.phone      || '').replace(/\D/g, '');
+  const firstName  = params.firstName  || '';
+  const lastName   = params.lastName   || '';
+  const email      = params.email      || '';
+  const services   = params.services   || '';
+  const technician = params.technician || 'Any Tech';
+
+  if (!phone)     return json({ success: false, error: 'Phone number is required.' });
+  if (!firstName) return json({ success: false, error: 'First name is required.' });
+  if (!services)  return json({ success: false, error: 'Please select at least one service.' });
+
+  const tz    = Session.getScriptTimeZone();
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const now   = Utilities.formatDate(new Date(), tz, 'h:mm a').replace(/\bam\b/,'AM').replace(/\bpm\b/,'PM');
+
+  const pointsEarned = calcPoints(services);
+
+  const apptSheet = getSheet(APPT_TAB);
+  ensureApptHeader(apptSheet);
+  apptSheet.appendRow([
+    phone, firstName, lastName, today, technician,
+    now, services, email, pointsEarned, new Date().toISOString(), 'walk-in'
+  ]);
+
+  const newTotal    = upsertCustomer(phone, firstName, lastName, email, pointsEarned, today);
+  const pointsToFree = Math.max(0, FREE_PEDICURE_POINTS - newTotal);
+
+  return json({
+    success:       true,
+    firstName:     firstName,
+    lastName:      lastName,
+    services:      services,
+    technician:    technician,
+    pointsEarned:  pointsEarned,
+    totalPoints:   newTotal,
+    pointsToFree:  pointsToFree,
+    freeReward:    newTotal >= FREE_PEDICURE_POINTS,
+  });
 }
 
 // ── Time blocking ─────────────────────────────────────────────────────────────
