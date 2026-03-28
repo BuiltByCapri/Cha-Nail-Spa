@@ -78,7 +78,7 @@ function bookAppointment(params) {
 
   const sheet = getSheet();
   ensureHeader(sheet);
-  sheet.appendRow([phone, firstName, lastName, date, time, technician, services, new Date().toISOString()]);
+  sheet.appendRow([phone, firstName, lastName, date, technician, time, services, new Date().toISOString()]);
   return json({ success: true });
 }
 
@@ -186,7 +186,7 @@ function getRows() {
 
 function ensureHeader(sheet) {
   if (sheet.getLastRow() === 0) {
-    sheet.appendRow(['Phone','First Name','Last Name','Date','Time','Technician','Services','Submitted At']);
+    sheet.appendRow(['Phone','First Name','Last Name','Date','Technician','Time','Services','Submitted At']);
   }
 }
 
