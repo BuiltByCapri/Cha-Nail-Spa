@@ -92,8 +92,8 @@ function getUnavailableSlots(technician, date, rows) {
 
   for (const row of rows) {
     if (String(row[3]) !== date) continue;
-    const rowTech = String(row[4]);
-    if (!isAny && rowTech !== 'Any Tech' && rowTech !== technician) continue;
+    const rowTechs = String(row[4]).split(',').map(t => t.trim());
+    if (!isAny && !rowTechs.includes('Any Tech') && !rowTechs.includes(technician)) continue;
 
     const rowTime     = String(row[5]);
     const rowServices = String(row[6]);
@@ -158,9 +158,19 @@ function allTimeSlots() {
   return slots;
 }
 
-function timeToMinutes(timeStr) {
+function timeToMinutes(timeVal) {
+  // Google Sheets returns time cells as Date objects or fractional numbers
+  // (fraction of 24h: 0.375 = 9:00 AM). Handle all three cases.
+  if (timeVal instanceof Date) {
+    return timeVal.getHours() * 60 + timeVal.getMinutes();
+  }
+  const num = Number(timeVal);
+  if (!isNaN(num) && num >= 0 && num < 1) {
+    return Math.round(num * 24 * 60);
+  }
+  // Plain string "9:00 AM" / "1:30 PM"
   try {
-    const parts = String(timeStr).split(' ');
+    const parts = String(timeVal).split(' ');
     const ampm  = parts[1];
     const hm    = parts[0].split(':');
     let   h     = parseInt(hm[0], 10);
@@ -168,7 +178,7 @@ function timeToMinutes(timeStr) {
     if (ampm === 'PM' && h !== 12) h += 12;
     if (ampm === 'AM' && h === 12) h = 0;
     return h * 60 + m;
-  } catch (_) { return 0; }
+  } catch (_) { return -1; }
 }
 
 // ── Sheet helpers ─────────────────────────────────────────────────────────────
