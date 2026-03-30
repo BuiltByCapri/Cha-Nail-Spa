@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff · Cha Nails &amp; Spa</title>
+  <style>
+    :root {
+      --brand:   #b76e79;
+      --brand-d: #9a5a64;
+      --bg:      #fdf6f7;
+      --card:    #ffffff;
+      --text:    #2d2d2d;
+      --muted:   #888;
+      --border:  #e8d5d8;
+      --radius:  14px;
+      --shadow:  0 4px 24px rgba(183,110,121,.12);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── header ── */
+    header {
+      background: var(--brand);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+    }
+    header .brand { font-size: 1.35rem; font-weight: 700; }
+    header .brand span { font-weight: 300; }
+    header .date-badge {
+      font-size: .82rem;
+      background: rgba(255,255,255,.22);
+      padding: 4px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    /* ── layout ── */
+    main {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 20px 16px 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ── section cards ── */
+    .section {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--brand);
+    }
+    .section-body { padding: 14px 18px; }
+
+    /* ── refresh button ── */
+    .btn-refresh {
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: .82rem;
+      padding: 4px 10px;
+      cursor: pointer;
+      transition: border-color .2s;
+    }
+    .btn-refresh:hover { border-color: var(--brand); color: var(--brand); }
+
+    /* ── availability pills ── */
+    .avail-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .avail-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 30px;
+      font-size: .88rem;
+      background: #fff;
+    }
+    .avail-pill .tech-name { font-weight: 600; }
+    .avail-pill .appt-count {
+      background: var(--brand);
+      color: #fff;
+      font-size: .75rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 20px;
+      min-width: 20px;
+      text-align: center;
+    }
+    .avail-pill .appt-count.zero { background: #e0e0e0; color: #999; }
+
+    /* ── appointment cards ── */
+    .tech-group { margin-bottom: 18px; }
+    .tech-group:last-child { margin-bottom: 0; }
+    .tech-group-label {
+      font-size: .78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .appt-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 11px 13px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      background: #fff;
+    }
+    .appt-card:last-child { margin-bottom: 0; }
+    .appt-time {
+      font-size: .92rem;
+      font-weight: 700;
+      color: var(--brand);
+      min-width: 68px;
+      padding-top: 1px;
+    }
+    .appt-info { flex: 1; }
+    .appt-client { font-size: .92rem; font-weight: 600; margin-bottom: 2px; }
+    .appt-services { font-size: .82rem; color: var(--muted); }
+    .status-badge {
+      font-size: .72rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 20px;
+      white-space: nowrap;
+      text-transform: capitalize;
+    }
+    .status-pending   { background: #f0f0f0; color: #666; }
+    .status-checkedin { background: #f5dde1; color: var(--brand-d); }
+    .status-walkin    { background: #fce4ec; color: #ad1457; }
+
+    .no-appts {
+      font-size: .88rem;
+      color: var(--muted);
+      text-align: center;
+      padding: 18px 0;
+    }
+
+    /* ── quick add form ── */
+    .form-row { margin-bottom: 14px; }
+    .form-row label {
+      display: block;
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 5px;
+    }
+    .form-row input,
+    .form-row select {
+      width: 100%;
+      padding: 10px 13px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: .97rem;
+      color: var(--text);
+      background: #fff;
+      transition: border-color .2s;
+    }
+    .form-row input:focus,
+    .form-row select:focus { outline: none; border-color: var(--brand); }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* ── service pills ── */
+    .svc-pills { display: flex; flex-wrap: wrap; gap: 7px; }
+    .svc-pill {
+      padding: 7px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      font-size: .85rem;
+      cursor: pointer;
+      transition: all .15s;
+      user-select: none;
+      background: #fff;
+    }
+    .svc-pill:hover { border-color: var(--brand); }
+    .svc-pill.on {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* ── lookup note ── */
+    .lookup-note {
+      font-size: .82rem;
+      color: var(--brand-d);
+      margin-top: -8px;
+      margin-bottom: 10px;
+    }
+
+    /* ── buttons ── */
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: .97rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .btn-primary { background: var(--brand); color: #fff; }
+    .btn-primary:hover { background: var(--brand-d); }
+    .btn-primary:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-ghost {
+      background: none;
+      border: 1.5px solid var(--border);
+      color: var(--muted);
+      margin-top: 8px;
+    }
+    .btn-ghost:hover { border-color: var(--brand); color: var(--brand); }
+
+    /* ── toggle ── */
+    #add-form { display: none; }
+    #add-form.open { display: block; }
+
+    /* ── inline messages ── */
+    .msg {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: .88rem;
+      margin-bottom: 12px;
+    }
+    .msg.error   { background: #fdecea; color: #c0392b; }
+    .msg.success { background: #eafaf1; color: #1e8449; }
+    .msg.info    { background: #eaf4fb; color: #1a5276; }
+
+    /* ── spinner ── */
+    .spinner {
+      display: inline-block;
+      width: 15px; height: 15px;
+      border: 2.5px solid #fff;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      vertical-align: middle;
+      margin-right: 5px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── footer ── */
+    footer {
+      text-align: center;
+      padding: 24px 16px;
+      font-size: .82rem;
+    }
+    footer a { color: var(--brand); text-decoration: none; font-weight: 600; }
+    footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 480px) {
+      .row2 { grid-template-columns: 1fr; gap: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">Cha<span> Nails &amp; Spa</span> <span style="font-size:.7rem;font-weight:400;opacity:.8">Staff</span></div>
+  <div class="date-badge" id="header-date"></div>
+</header>
+
+<main>
+
+  <!-- ── Availability at a glance ── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">Technicians Today</div>
+      <button class="btn-refresh" onclick="loadSchedule()">&#8635; Refresh</button>
+    </div>
+    <div class="section-body">
+      <div class="avail-grid" id="avail-grid">
+        <span style="font-size:.85rem;color:var(--muted)">Loading&hellip;</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Today's schedule ── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">Today&#39;s Schedule</div>
+    </div>
+    <div class="section-body" id="schedule-body">
+      <div class="no-appts">Loading&hellip;</div>
+    </div>
+  </div>
+
+  <!-- ── Quick add ── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">Quick Add</div>
+    </div>
+    <div class="section-body">
+
+      <button class="btn btn-primary" id="toggle-add-btn" onclick="toggleAddForm()">+ Add Appointment</button>
+
+      <div id="add-form">
+        <div style="height:16px"></div>
+        <div id="add-msg"></div>
+
+        <div class="form-row">
+          <label>Phone Number</label>
+          <input type="tel" id="add-phone" placeholder="(713) 555-0000" maxlength="14" />
+        </div>
+        <div id="lookup-note" class="lookup-note" style="display:none"></div>
+
+        <div class="row2">
+          <div class="form-row">
+            <label>First Name</label>
+            <input type="text" id="add-fn" placeholder="First" />
+          </div>
+          <div class="form-row">
+            <label>Last Name</label>
+            <input type="text" id="add-ln" placeholder="Last" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Services</label>
+          <div class="svc-pills" id="add-svc-pills"></div>
+        </div>
+
+        <div class="row2">
+          <div class="form-row">
+            <label>Technician</label>
+            <select id="add-tech">
+              <option>Any Tech</option>
+              <option>Bae</option>
+              <option>Hannah</option>
+              <option>Jessica</option>
+              <option>Kim</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Date</label>
+            <input type="date" id="add-date" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Time</label>
+          <select id="add-time">
+            <option value="">Select services &amp; date first</option>
+          </select>
+        </div>
+
+        <button class="btn btn-primary" id="btn-submit-add" onclick="submitAdd()">Book Appointment</button>
+        <button class="btn btn-ghost" onclick="toggleAddForm()">Cancel</button>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <a href="index.html">&larr; Back to Check In</a>
+</footer>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxaQvPn4xRqNrTIwN53QDHwYL0Dkm0aYEIuJfnLXfTn-LAesoP4euY10jX2typEEIfO/exec';
+
+const TECHS = ['Any Tech', 'Bae', 'Hannah', 'Jessica', 'Kim'];
+
+const SERVICES = [
+  { name: 'Manicure',         duration: 30 },
+  { name: 'Pedicure',         duration: 45 },
+  { name: 'Gel Manicure',     duration: 45 },
+  { name: 'Gel Pedicure',     duration: 60 },
+  { name: 'Acrylic Full Set', duration: 75 },
+  { name: 'Acrylic Fill',     duration: 60 },
+  { name: 'Nail Art',         duration: 30 },
+  { name: 'Waxing',           duration: 30 },
+];
+
+const ALL_SLOTS = [
+  '9:00 AM','9:15 AM','9:30 AM','9:45 AM',
+  '10:00 AM','10:15 AM','10:30 AM','10:45 AM',
+  '11:00 AM','11:15 AM','11:30 AM','11:45 AM',
+  '12:00 PM','12:15 PM','12:30 PM','12:45 PM',
+  '1:00 PM','1:15 PM','1:30 PM','1:45 PM',
+  '2:00 PM','2:15 PM','2:30 PM','2:45 PM',
+  '3:00 PM','3:15 PM','3:30 PM','3:45 PM',
+  '4:00 PM','4:15 PM','4:30 PM','4:45 PM',
+  '5:00 PM','5:15 PM','5:30 PM','5:45 PM',
+  '6:00 PM'
+];
+
+function todayStr() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function formatDateLabel(str) {
+  try {
+    const [y, m, d] = str.split('-');
+    const months = ['January','February','March','April','May','June','July',
+                    'August','September','October','November','December'];
+    const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const dt = new Date(Number(y), Number(m) - 1, Number(d));
+    return days[dt.getDay()] + ', ' + months[dt.getMonth()] + ' ' + Number(d);
+  } catch(_) { return str; }
+}
+
+function formatPhone(val) {
+  const d = val.replace(/\D/g,'');
+  if (d.length <= 3) return d;
+  if (d.length <= 6) return '(' + d.slice(0,3) + ') ' + d.slice(3);
+  return '(' + d.slice(0,3) + ') ' + d.slice(3,6) + '-' + d.slice(6,10);
+}
+
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+
+document.addEventListener('DOMContentLoaded', function() {
+  const today = todayStr();
+  document.getElementById('header-date').textContent = formatDateLabel(today);
+  document.getElementById('add-date').value = today;
+  document.getElementById('add-date').min   = today;
+
+  buildServicePills();
+  loadSchedule();
+
+  document.getElementById('add-phone').addEventListener('input', function() {
+    this.value = formatPhone(this.value);
+  });
+  document.getElementById('add-phone').addEventListener('change', lookupPhone);
+  document.getElementById('add-tech').addEventListener('change', loadTimeSlots);
+  document.getElementById('add-date').addEventListener('change', loadTimeSlots);
+});
+
+// ── Schedule ──────────────────────────────────────────────────────────────────
+
+async function loadSchedule() {
+  const today = todayStr();
+  document.getElementById('schedule-body').innerHTML = '<div class="no-appts">Loading&hellip;</div>';
+  document.getElementById('avail-grid').innerHTML    = '<span style="font-size:.85rem;color:var(--muted)">Loading&hellip;</span>';
+
+  try {
+    const res  = await fetch(SCRIPT_URL + '?action=debug&date=' + encodeURIComponent(today));
+    const data = await res.json();
+
+    const todayRows = (data.rows || []).filter(function(r) { return r.date === today; });
+    renderAvailability(todayRows);
+    renderSchedule(todayRows);
+  } catch(e) {
+    document.getElementById('schedule-body').innerHTML = '<div class="no-appts">Could not load schedule.</div>';
+    document.getElementById('avail-grid').innerHTML    = '<span style="font-size:.85rem;color:var(--muted)">Error loading data.</span>';
+  }
+}
+
+function renderAvailability(rows) {
+  const counts = {};
+  ['Bae','Hannah','Jessica','Kim'].forEach(function(t) { counts[t] = 0; });
+
+  rows.forEach(function(r) {
+    r.tech.split(',').map(function(t) { return t.trim(); }).forEach(function(t) {
+      if (counts[t] !== undefined) counts[t]++;
+    });
+  });
+
+  const grid = document.getElementById('avail-grid');
+  grid.innerHTML = '';
+  Object.keys(counts).forEach(function(t) {
+    const n    = counts[t];
+    const pill = document.createElement('div');
+    pill.className = 'avail-pill';
+    pill.innerHTML =
+      '<span class="tech-name">' + escHtml(t) + '</span>' +
+      '<span class="appt-count' + (n === 0 ? ' zero' : '') + '">' + n + '</span>';
+    grid.appendChild(pill);
+  });
+}
+
+function renderSchedule(rows) {
+  const body = document.getElementById('schedule-body');
+  if (rows.length === 0) {
+    body.innerHTML = '<div class="no-appts">No appointments scheduled for today.</div>';
+    return;
+  }
+
+  rows.sort(function(a, b) { return timeToMin(a.time) - timeToMin(b.time); });
+
+  const groups = {};
+  rows.forEach(function(r) {
+    r.tech.split(',').map(function(t) { return t.trim(); }).forEach(function(t) {
+      if (!groups[t]) groups[t] = [];
+      groups[t].push(r);
+    });
+  });
+
+  body.innerHTML = '';
+  const order = ['Bae','Hannah','Jessica','Kim','Any Tech'];
+  const keys  = order.filter(function(t) { return groups[t]; })
+    .concat(Object.keys(groups).filter(function(t) { return order.indexOf(t) === -1; }));
+
+  keys.forEach(function(tech) {
+    const grp = document.createElement('div');
+    grp.className = 'tech-group';
+
+    const lbl = document.createElement('div');
+    lbl.className   = 'tech-group-label';
+    lbl.textContent = tech;
+    grp.appendChild(lbl);
+
+    groups[tech].forEach(function(r) {
+      const statusKey = r.status.replace(/\s+/g,'').toLowerCase();
+      const statusClass = statusKey === 'checkedin' ? 'status-checkedin'
+                        : statusKey === 'walkin'    ? 'status-walkin'
+                        : 'status-pending';
+
+      const card = document.createElement('div');
+      card.className = 'appt-card';
+      card.innerHTML =
+        '<div class="appt-time">'  + escHtml(r.time) + '</div>' +
+        '<div class="appt-info">' +
+          '<div class="appt-client">'   + escHtml(r.phone || '(walk-in)') + '</div>' +
+          '<div class="appt-services">' + escHtml(r.services) + '</div>' +
+        '</div>' +
+        '<span class="status-badge ' + statusClass + '">' + escHtml(r.status || 'pending') + '</span>';
+      grp.appendChild(card);
+    });
+
+    body.appendChild(grp);
+  });
+}
+
+function timeToMin(t) {
+  try {
+    const parts = String(t).split(' ');
+    const ampm  = parts[1];
+    const hm    = parts[0].split(':');
+    let   h     = parseInt(hm[0], 10);
+    const m     = parseInt(hm[1], 10);
+    if (ampm === 'PM' && h !== 12) h += 12;
+    if (ampm === 'AM' && h === 12) h = 0;
+    return h * 60 + m;
+  } catch(_) { return 0; }
+}
+
+// ── Quick add ──────────────────────────────────────────────────────────────────
+
+function buildServicePills() {
+  const wrap = document.getElementById('add-svc-pills');
+  SERVICES.forEach(function(s) {
+    const pill = document.createElement('span');
+    pill.className    = 'svc-pill';
+    pill.textContent  = s.name;
+    pill.dataset.name = s.name;
+    pill.addEventListener('click', function() {
+      pill.classList.toggle('on');
+      loadTimeSlots();
+    });
+    wrap.appendChild(pill);
+  });
+}
+
+function selectedServices() {
+  return Array.from(document.querySelectorAll('#add-svc-pills .svc-pill.on'))
+    .map(function(p) { return p.dataset.name; });
+}
+
+async function loadTimeSlots() {
+  const tech     = document.getElementById('add-tech').value;
+  const date     = document.getElementById('add-date').value;
+  const services = selectedServices();
+  const sel      = document.getElementById('add-time');
+
+  if (!date || services.length === 0) {
+    sel.innerHTML = '<option value="">Select services &amp; date first</option>';
+    return;
+  }
+
+  sel.innerHTML = '<option value="">Loading&hellip;</option>';
+
+  try {
+    const url = SCRIPT_URL + '?action=availability'
+      + '&technician=' + encodeURIComponent(tech)
+      + '&date='       + encodeURIComponent(date)
+      + '&services='   + encodeURIComponent(services.join(','));
+    const res  = await fetch(url);
+    const data = await res.json();
+
+    const unavailable = new Set(data.unavailableSlots || []);
+    sel.innerHTML = '<option value="">Select a time</option>';
+    ALL_SLOTS.forEach(function(slot) {
+      if (unavailable.has(slot)) return;
+      const opt = document.createElement('option');
+      opt.value       = slot;
+      opt.textContent = slot;
+      sel.appendChild(opt);
+    });
+
+    if (sel.options.length === 1) {
+      sel.innerHTML = '<option value="">No availability — try another date or tech</option>';
+    }
+  } catch(e) {
+    sel.innerHTML = '<option value="">Error loading times</option>';
+  }
+}
+
+async function lookupPhone() {
+  const phone = document.getElementById('add-phone').value.trim();
+  const note  = document.getElementById('lookup-note');
+  if (!phone || phone.replace(/\D/g,'').length < 10) { note.style.display = 'none'; return; }
+
+  try {
+    const res  = await fetch(SCRIPT_URL + '?action=lookup&phone=' + encodeURIComponent(phone));
+    const data = await res.json();
+    if (data.found) {
+      document.getElementById('add-fn').value = data.firstName || '';
+      document.getElementById('add-ln').value = data.lastName  || '';
+      note.textContent   = '\u2713 Returning client: ' + (data.firstName || '') + (data.lastName ? ' ' + data.lastName : '');
+      note.style.display = 'block';
+    } else {
+      note.textContent   = 'New client';
+      note.style.display = 'block';
+    }
+  } catch(e) {
+    note.style.display = 'none';
+  }
+}
+
+async function submitAdd() {
+  const phone    = document.getElementById('add-phone').value.trim();
+  const fn       = document.getElementById('add-fn').value.trim();
+  const ln       = document.getElementById('add-ln').value.trim();
+  const tech     = document.getElementById('add-tech').value;
+  const date     = document.getElementById('add-date').value;
+  const time     = document.getElementById('add-time').value;
+  const services = selectedServices();
+
+  if (!fn)                   { showAddMsg('First name is required.', 'error'); return; }
+  if (services.length === 0) { showAddMsg('Please select at least one service.', 'error'); return; }
+  if (!date)                 { showAddMsg('Please select a date.', 'error'); return; }
+  if (!time)                 { showAddMsg('Please select a time.', 'error'); return; }
+
+  const btn = document.getElementById('btn-submit-add');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Booking\u2026';
+  showAddMsg('', '');
+
+  const params = new URLSearchParams({
+    action:     'book',
+    phone:      phone,
+    firstName:  fn,
+    lastName:   ln,
+    email:      '',
+    date:       date,
+    technician: tech,
+    services:   services.join(','),
+    time:       time,
+    multiTech:  'false',
+  });
+
+  try {
+    const res  = await fetch(SCRIPT_URL + '?' + params.toString());
+    const data = await res.json();
+
+    btn.disabled    = false;
+    btn.textContent = 'Book Appointment';
+
+    if (!data.success) {
+      showAddMsg(data.error || 'Booking failed. Please try again.', 'error');
+      return;
+    }
+
+    showAddMsg('\u2713 Booked ' + escHtml(fn) + ' at ' + escHtml(time) + '.', 'success');
+    resetAddForm();
+    loadSchedule();
+
+  } catch(e) {
+    btn.disabled    = false;
+    btn.textContent = 'Book Appointment';
+    showAddMsg('Network error. Please try again.', 'error');
+  }
+}
+
+function resetAddForm() {
+  document.getElementById('add-phone').value = '';
+  document.getElementById('add-fn').value    = '';
+  document.getElementById('add-ln').value    = '';
+  document.getElementById('add-date').value  = todayStr();
+  document.getElementById('add-tech').value  = 'Any Tech';
+  document.getElementById('add-time').innerHTML = '<option value="">Select services &amp; date first</option>';
+  document.getElementById('lookup-note').style.display = 'none';
+  document.querySelectorAll('#add-svc-pills .svc-pill').forEach(function(p) {
+    p.classList.remove('on');
+  });
+}
+
+function toggleAddForm() {
+  const form = document.getElementById('add-form');
+  const btn  = document.getElementById('toggle-add-btn');
+  const open = form.classList.toggle('open');
+  btn.textContent = open ? '\u2212 Cancel' : '+ Add Appointment';
+  if (!open) {
+    resetAddForm();
+    document.getElementById('add-msg').innerHTML = '';
+  }
+}
+
+function showAddMsg(text, type) {
+  const el = document.getElementById('add-msg');
+  if (!text) { el.innerHTML = ''; return; }
+  el.innerHTML = '<div class="msg ' + type + '">' + escHtml(text) + '</div>';
+}
+</script>
+</body>
+</html>
