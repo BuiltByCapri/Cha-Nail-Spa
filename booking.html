@@ -187,7 +187,7 @@
         </div>
       </div>
       <div class="form-group">
-        <label for="email-input">Email <span class="label-optional">optional</span></label>
+        <label for="email-input">Email for confirmations & reminders <span class="label-optional">optional</span></label>
         <input type="email" id="email-input" placeholder="jane@email.com" />
       </div>
       <div class="form-group">
@@ -604,6 +604,14 @@
         return `${p.dataset.service} ${p.dataset.dur}`;
       });
       appointments.push({ services, technician: (techSelections[i] || ['Any Tech']).join(', '), time: timeSelections[i] || '' });
+    }
+
+    for (let i = 1; i <= apptCount; i++) {
+      if (!timeSelections[i]) {
+        banner.textContent = 'Please select a preferred time for your appointment.';
+        banner.classList.add('visible');
+        return;
+      }
     }
 
     const bookBtn = document.querySelector('.btn-primary');

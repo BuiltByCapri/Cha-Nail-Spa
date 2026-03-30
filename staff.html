@@ -6,13 +6,16 @@
   <title>Staff · Cha Nails &amp; Spa</title>
   <style>
     :root {
-      --brand:   #b76e79;
-      --brand-d: #9a5a64;
-      --bg:      #fdf6f7;
-      --card:    #ffffff;
-      --text:    #2d2d2d;
-      --muted:   #888;
-      --border:  #e8d5d8;
+      --bg:        #fdf0ec;  
+      --text:      #3d2314;
+      --accent:    #b87a5a;
+      --accent-lt: #c9956a;
+      --floral:    #f2bfb5;
+      --card-bg:   #fff9f7;
+      --border:    #e8c9bc;
+      --white:     #ffffff;
+      --header-bg: #3d2314;
+      --header-text: #fdf0ec;
       --radius:  14px;
       --shadow:  0 4px 24px rgba(183,110,121,.12);
     }
@@ -26,8 +29,8 @@
 
     /* ── header ── */
     header {
-      background: var(--brand);
-      color: #fff;
+      background: #3d2314;
+      color: #fdf0ec;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -114,15 +117,10 @@
       min-width: 20px;
       text-align: center;
     }
-    .avail-pill .appt-count.zero {
-      background: #e0e0e0;
-      color: #999;
-    }
+    .avail-pill .appt-count.zero { background: #e0e0e0; color: #999; }
 
     /* ── appointment cards ── */
-    .tech-group {
-      margin-bottom: 18px;
-    }
+    .tech-group { margin-bottom: 18px; }
     .tech-group:last-child { margin-bottom: 0; }
     .tech-group-label {
       font-size: .78rem;
@@ -151,15 +149,8 @@
       padding-top: 1px;
     }
     .appt-info { flex: 1; }
-    .appt-client {
-      font-size: .92rem;
-      font-weight: 600;
-      margin-bottom: 2px;
-    }
-    .appt-services {
-      font-size: .82rem;
-      color: var(--muted);
-    }
+    .appt-client { font-size: .92rem; font-weight: 600; margin-bottom: 2px; }
+    .appt-services { font-size: .82rem; color: var(--muted); }
     .status-badge {
       font-size: .72rem;
       font-weight: 700;
@@ -168,9 +159,9 @@
       white-space: nowrap;
       text-transform: capitalize;
     }
-    .status-pending    { background: #f0f0f0; color: #666; }
-    .status-checkedin  { background: #f5dde1; color: var(--brand-d); }
-    .status-walkin     { background: #fce4ec; color: #ad1457; }
+    .status-pending   { background: #f0f0f0; color: #666; }
+    .status-checkedin { background: #f5dde1; color: var(--brand-d); }
+    .status-walkin    { background: #fce4ec; color: #ad1457; }
 
     .no-appts {
       font-size: .88rem;
@@ -206,11 +197,7 @@
     .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
     /* ── service pills ── */
-    .svc-pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-    }
+    .svc-pills { display: flex; flex-wrap: wrap; gap: 7px; }
     .svc-pill {
       padding: 7px 12px;
       border: 1.5px solid var(--border);
@@ -219,6 +206,7 @@
       cursor: pointer;
       transition: all .15s;
       user-select: none;
+      background: #fff;
     }
     .svc-pill:hover { border-color: var(--brand); }
     .svc-pill.on {
@@ -228,7 +216,7 @@
       font-weight: 600;
     }
 
-    /* ── lookup result ── */
+    /* ── lookup note ── */
     .lookup-note {
       font-size: .82rem;
       color: var(--brand-d);
@@ -365,9 +353,7 @@
 
         <div class="form-row">
           <label>Services</label>
-          <div class="svc-pills" id="add-svc-pills">
-            <!-- injected -->
-          </div>
+          <div class="svc-pills" id="add-svc-pills"></div>
         </div>
 
         <div class="row2">
@@ -413,14 +399,14 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxaQvPn4xRqNrTIwN53Q
 const TECHS = ['Any Tech', 'Bae', 'Hannah', 'Jessica', 'Kim'];
 
 const SERVICES = [
-  { name: 'Manicure',         duration: 30  },
-  { name: 'Pedicure',         duration: 45  },
-  { name: 'Gel Manicure',     duration: 45  },
-  { name: 'Gel Pedicure',     duration: 60  },
-  { name: 'Acrylic Full Set', duration: 75  },
-  { name: 'Acrylic Fill',     duration: 60  },
-  { name: 'Nail Art',         duration: 30  },
-  { name: 'Waxing',           duration: 30  },
+  { name: 'Manicure',         duration: 30 },
+  { name: 'Pedicure',         duration: 45 },
+  { name: 'Gel Manicure',     duration: 45 },
+  { name: 'Gel Pedicure',     duration: 60 },
+  { name: 'Acrylic Full Set', duration: 75 },
+  { name: 'Acrylic Fill',     duration: 60 },
+  { name: 'Nail Art',         duration: 30 },
+  { name: 'Waxing',           duration: 30 },
 ];
 
 const ALL_SLOTS = [
@@ -445,7 +431,7 @@ function formatDateLabel(str) {
     const [y, m, d] = str.split('-');
     const months = ['January','February','March','April','May','June','July',
                     'August','September','October','November','December'];
-    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
     const dt = new Date(Number(y), Number(m) - 1, Number(d));
     return days[dt.getDay()] + ', ' + months[dt.getMonth()] + ' ' + Number(d);
   } catch(_) { return str; }
@@ -481,10 +467,8 @@ document.addEventListener('DOMContentLoaded', function() {
     this.value = formatPhone(this.value);
   });
   document.getElementById('add-phone').addEventListener('change', lookupPhone);
-
-  ['add-tech', 'add-date'].forEach(function(id) {
-    document.getElementById(id).addEventListener('change', loadTimeSlots);
-  });
+  document.getElementById('add-tech').addEventListener('change', loadTimeSlots);
+  document.getElementById('add-date').addEventListener('change', loadTimeSlots);
 });
 
 // ── Schedule ──────────────────────────────────────────────────────────────────
@@ -492,7 +476,7 @@ document.addEventListener('DOMContentLoaded', function() {
 async function loadSchedule() {
   const today = todayStr();
   document.getElementById('schedule-body').innerHTML = '<div class="no-appts">Loading&hellip;</div>';
-  document.getElementById('avail-grid').innerHTML = '<span style="font-size:.85rem;color:var(--muted)">Loading&hellip;</span>';
+  document.getElementById('avail-grid').innerHTML    = '<span style="font-size:.85rem;color:var(--muted)">Loading&hellip;</span>';
 
   try {
     const res  = await fetch(SCRIPT_URL + '?action=debug&date=' + encodeURIComponent(today));
@@ -509,22 +493,18 @@ async function loadSchedule() {
 
 function renderAvailability(rows) {
   const counts = {};
-  TECHS.forEach(function(t) { counts[t] = 0; });
+  ['Bae','Hannah','Jessica','Kim'].forEach(function(t) { counts[t] = 0; });
 
   rows.forEach(function(r) {
-    const techs = r.tech.split(',').map(function(t) { return t.trim(); });
-    techs.forEach(function(t) {
+    r.tech.split(',').map(function(t) { return t.trim(); }).forEach(function(t) {
       if (counts[t] !== undefined) counts[t]++;
-      else counts[t] = 1;
     });
   });
 
   const grid = document.getElementById('avail-grid');
   grid.innerHTML = '';
-
-  // show named techs only (skip Any Tech in this summary)
-  ['Bae','Hannah','Jessica','Kim'].forEach(function(t) {
-    const n   = counts[t] || 0;
+  Object.keys(counts).forEach(function(t) {
+    const n    = counts[t];
     const pill = document.createElement('div');
     pill.className = 'avail-pill';
     pill.innerHTML =
@@ -536,28 +516,22 @@ function renderAvailability(rows) {
 
 function renderSchedule(rows) {
   const body = document.getElementById('schedule-body');
-
   if (rows.length === 0) {
     body.innerHTML = '<div class="no-appts">No appointments scheduled for today.</div>';
     return;
   }
 
-  // sort by time
   rows.sort(function(a, b) { return timeToMin(a.time) - timeToMin(b.time); });
 
-  // group by technician
   const groups = {};
   rows.forEach(function(r) {
-    const techs = r.tech.split(',').map(function(t) { return t.trim(); });
-    techs.forEach(function(t) {
+    r.tech.split(',').map(function(t) { return t.trim(); }).forEach(function(t) {
       if (!groups[t]) groups[t] = [];
       groups[t].push(r);
     });
   });
 
   body.innerHTML = '';
-
-  // order: named techs first, then Any Tech
   const order = ['Bae','Hannah','Jessica','Kim','Any Tech'];
   const keys  = order.filter(function(t) { return groups[t]; })
     .concat(Object.keys(groups).filter(function(t) { return order.indexOf(t) === -1; }));
@@ -567,30 +541,25 @@ function renderSchedule(rows) {
     grp.className = 'tech-group';
 
     const lbl = document.createElement('div');
-    lbl.className = 'tech-group-label';
+    lbl.className   = 'tech-group-label';
     lbl.textContent = tech;
     grp.appendChild(lbl);
 
     groups[tech].forEach(function(r) {
-      const statusKey = r.status.replace(/\s+/g,'').toLowerCase(); // 'pending','checkedin','walkin'
+      const statusKey = r.status.replace(/\s+/g,'').toLowerCase();
       const statusClass = statusKey === 'checkedin' ? 'status-checkedin'
                         : statusKey === 'walkin'    ? 'status-walkin'
                         : 'status-pending';
-      const statusLabel = r.status || 'pending';
-
-      const clientLabel = r.phone
-        ? r.phone
-        : '(walk-in)';
 
       const card = document.createElement('div');
       card.className = 'appt-card';
       card.innerHTML =
-        '<div class="appt-time">' + escHtml(r.time) + '</div>' +
+        '<div class="appt-time">'  + escHtml(r.time) + '</div>' +
         '<div class="appt-info">' +
-          '<div class="appt-client">' + escHtml(clientLabel) + '</div>' +
+          '<div class="appt-client">'   + escHtml(r.phone || '(walk-in)') + '</div>' +
           '<div class="appt-services">' + escHtml(r.services) + '</div>' +
         '</div>' +
-        '<span class="status-badge ' + statusClass + '">' + escHtml(statusLabel) + '</span>';
+        '<span class="status-badge ' + statusClass + '">' + escHtml(r.status || 'pending') + '</span>';
       grp.appendChild(card);
     });
 
@@ -611,14 +580,14 @@ function timeToMin(t) {
   } catch(_) { return 0; }
 }
 
-// ── Quick add ─────────────────────────────────────────────────────────────────
+// ── Quick add ──────────────────────────────────────────────────────────────────
 
 function buildServicePills() {
   const wrap = document.getElementById('add-svc-pills');
   SERVICES.forEach(function(s) {
     const pill = document.createElement('span');
-    pill.className = 'svc-pill';
-    pill.textContent = s.name;
+    pill.className    = 'svc-pill';
+    pill.textContent  = s.name;
     pill.dataset.name = s.name;
     pill.addEventListener('click', function() {
       pill.classList.toggle('on');
@@ -659,7 +628,7 @@ async function loadTimeSlots() {
     ALL_SLOTS.forEach(function(slot) {
       if (unavailable.has(slot)) return;
       const opt = document.createElement('option');
-      opt.value = slot;
+      opt.value       = slot;
       opt.textContent = slot;
       sel.appendChild(opt);
     });
@@ -703,10 +672,10 @@ async function submitAdd() {
   const time     = document.getElementById('add-time').value;
   const services = selectedServices();
 
-  if (!fn)              { showAddMsg('First name is required.', 'error'); return; }
+  if (!fn)                   { showAddMsg('First name is required.', 'error'); return; }
   if (services.length === 0) { showAddMsg('Please select at least one service.', 'error'); return; }
-  if (!date)            { showAddMsg('Please select a date.', 'error'); return; }
-  if (!time)            { showAddMsg('Please select a time.', 'error'); return; }
+  if (!date)                 { showAddMsg('Please select a date.', 'error'); return; }
+  if (!time)                 { showAddMsg('Please select a time.', 'error'); return; }
 
   const btn = document.getElementById('btn-submit-add');
   btn.disabled = true;
@@ -730,7 +699,7 @@ async function submitAdd() {
     const res  = await fetch(SCRIPT_URL + '?' + params.toString());
     const data = await res.json();
 
-    btn.disabled = false;
+    btn.disabled    = false;
     btn.textContent = 'Book Appointment';
 
     if (!data.success) {
@@ -738,12 +707,12 @@ async function submitAdd() {
       return;
     }
 
-    showAddMsg('\u2713 Appointment booked for ' + escHtml(fn) + ' at ' + escHtml(time) + '.', 'success');
+    showAddMsg('\u2713 Booked ' + escHtml(fn) + ' at ' + escHtml(time) + '.', 'success');
     resetAddForm();
     loadSchedule();
 
   } catch(e) {
-    btn.disabled = false;
+    btn.disabled    = false;
     btn.textContent = 'Book Appointment';
     showAddMsg('Network error. Please try again.', 'error');
   }
