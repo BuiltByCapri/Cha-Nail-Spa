@@ -606,6 +606,14 @@
       appointments.push({ services, technician: (techSelections[i] || ['Any Tech']).join(', '), time: timeSelections[i] || '' });
     }
 
+    for (let i = 1; i <= apptCount; i++) {
+      if (!timeSelections[i]) {
+        banner.textContent = 'Please select a preferred time for your appointment.';
+        banner.classList.add('visible');
+        return;
+      }
+    }
+
     const bookBtn = document.querySelector('.btn-primary');
     bookBtn.disabled = true; bookBtn.textContent = 'Booking…';
     let lastRewards = null;
